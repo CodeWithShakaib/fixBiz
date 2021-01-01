@@ -1,0 +1,18 @@
+const sequelize = require('../../config/db.connection');
+const datatype = require('sequelize');
+const shop = require('./shop.model')
+const user = require('./user.model');
+
+let review = sequelize.define('review', {
+    body: datatype.STRING,
+    rating: datatype.STRING
+});
+
+review.belongsTo(shop);
+review.belongsTo(user);
+
+review.sync().then(() => {
+    console.log('New table created');
+})
+
+module.exports = review
