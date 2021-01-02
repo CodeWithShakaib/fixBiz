@@ -51,7 +51,7 @@ function create(req, res) {
                 phone_number: params.phone_number
             });
             return record.save().then((record) => {
-                apiRes.apiSuccess(res, record, "Success", )
+                apiRes.apiSuccess(res, [record], "Success", )
             })
         }
     }).catch(error => console.log(error))
@@ -62,7 +62,7 @@ function get(req, res) {
     user.count({ where: { id: req.params.id } }).then(count => {
         if (count != 0) {
             user.findOne({ where: { id: req.params.id } }).then(record => {
-                return apiRes.apiSuccess(res, record.get({ plain: true }), "success")
+                return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             })
         } else {
             return apiRes.apiError(res, "User is not pressent with this id")
@@ -115,7 +115,7 @@ function update(req, res) {
             }, { where: { id: req.params.id } });
 
             user.findOne({ where: { id: req.params.id } }).then(record => {
-                return apiRes.apiSuccess(res, record.get({ plain: true }), "success")
+                return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             })
 
         } else {

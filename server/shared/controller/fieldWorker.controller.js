@@ -50,7 +50,7 @@ function create(req, res) {
                 gender: params.gender
             });
             return record.save().then((record) => {
-                apiRes.apiSuccess(res, record, "Success", )
+                apiRes.apiSuccess(res, [record], "Success", )
             })
         }
     }).catch(error => console.log(error))
@@ -61,7 +61,7 @@ function get(req, res) {
     fieldWorker.count({ where: { id: req.params.id } }).then(count => {
         if (count != 0) {
             fieldWorker.findOne({ where: { id: req.params.id } }).then(record => {
-                return apiRes.apiSuccess(res, record.get({ plain: true }), "success")
+                return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             })
         } else {
             return apiRes.apiError(res, "Field Worker is not pressent with this id")
@@ -114,7 +114,7 @@ function update(req, res) {
             }, { where: { id: req.params.id } });
 
             fieldWorker.findOne({ where: { id: req.params.id } }).then(record => {
-                return apiRes.apiSuccess(res, record.get({ plain: true }), "success")
+                return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             })
 
         } else {

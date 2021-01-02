@@ -50,7 +50,7 @@ function create(req, res) {
         categoryID: params.category_id
     });
     return record.save().then((record) => {
-        apiRes.apiSuccess(res, record, "Success", )
+        apiRes.apiSuccess(res, [record], "Success", )
     })
 }
 
@@ -59,7 +59,7 @@ function get(req, res) {
     ad.count({ where: { id: req.params.id } }).then(count => {
         if (count != 0) {
             ad.findOne({ where: { id: req.params.id } }).then(record => {
-                return apiRes.apiSuccess(res, record, "success")
+                return apiRes.apiSuccess(res, [record], "success")
             })
         } else {
             return apiRes.apiError(res, "ad is not pressent with this id")
@@ -127,7 +127,7 @@ function update(req, res) {
             }, { where: { id: req.params.id } });
 
             ad.findOne({ where: { id: req.params.id } }).then(record => {
-                return apiRes.apiSuccess(res, record.get({ plain: true }), "success")
+                return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             })
 
         } else {
