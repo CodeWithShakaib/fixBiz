@@ -36,13 +36,15 @@ function create(req, res) {
         transaction_method: params.transaction_method,
         longitude: params.longitude,
         latitude: params.latitude,
+        opening_time: params.opening_time,
+        closing_time: params.closing_time,
         userId: params.user_id,
         categoryId: params.category_id,
         fieldWorkerId: params.fieldWorker_id
     });
     return record.save().then((record) => {
         apiRes.apiSuccess(res, [record], "Success", )
-    })
+    }).catch(err => console.log(err.message))
 }
 
 
@@ -102,6 +104,8 @@ function update(req, res) {
                 transaction_method: params.transaction_method,
                 longitude: params.longitude,
                 latitude: params.latitude,
+                opening_time: params.opening_time,
+                closing_time: params.closing_time,
                 userId: params.user_id,
                 categoryId: params.category_id,
                 fieldWorkerId: params.fieldWorker_id

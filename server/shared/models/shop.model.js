@@ -13,7 +13,9 @@ let shop = sequelize.define('shop', {
     transaction_amount: datatype.STRING,
     transaction_method: datatype.STRING,
     longitude: datatype.FLOAT,
-    latitude: datatype.FLOAT
+    latitude: datatype.FLOAT,
+    opening_time: datatype.TIME,
+    closing_time: datatype.TIME
 });
 
 shop.belongsTo(user);
