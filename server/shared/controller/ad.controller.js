@@ -46,8 +46,8 @@ function create(req, res) {
         duration: params.duration,
         start_at: params.start_at,
         end_at: params.end_at,
-        shopID: params.shop_id,
-        categoryID: params.category_id
+        shopId: params.shop_id,
+        categoryId: params.category_id
     });
     return record.save().then((record) => {
         apiRes.apiSuccess(res, [record], "Success", )
@@ -122,8 +122,8 @@ function update(req, res) {
                 duration: params.duration,
                 start_at: params.start_at,
                 end_at: params.end_at,
-                shopID: params.shop_id,
-                categoryID: params.category_id
+                shopId: params.shop_id,
+                categoryId: params.category_id
             }, { where: { id: req.params.id } });
 
             ad.findOne({ where: { id: req.params.id } }).then(record => {

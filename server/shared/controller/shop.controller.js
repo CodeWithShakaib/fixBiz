@@ -44,7 +44,10 @@ function create(req, res) {
     });
     return record.save().then((record) => {
         apiRes.apiSuccess(res, [record], "Success", )
-    }).catch(err => console.log(err.message))
+    }).catch((err) => {
+        return apiRes.apiError(res, err.message)
+
+    })
 }
 
 

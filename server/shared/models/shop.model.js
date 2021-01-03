@@ -20,7 +20,7 @@ let shop = sequelize.define('shop', {
 
 shop.belongsTo(user);
 shop.belongsTo(category);
-shop.belongsTo(fieldWorker);
+shop.belongsTo(fieldWorker, { foregin_key: { allowNull: true } });
 
 shop.sync().then(() => {
     console.log('New table created');
