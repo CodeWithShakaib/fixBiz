@@ -9,11 +9,11 @@ let service = sequelize.define('service', {
     discount: datatype.FLOAT
 });
 
-service.belongsTo(shop);
+// service.belongsTo(shop);
 
 
-service.sync().then(() => {
-    console.log('New table created');
-})
+// service.sync().then(() => {
+//     console.log('New table created');
+// })
 
 module.exports = service

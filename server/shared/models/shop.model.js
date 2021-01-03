@@ -2,7 +2,10 @@ const sequelize = require('../../config/db.connection');
 const datatype = require('sequelize');
 const user = require('./user.model')
 const category = require('./category.model')
-const fieldWorker = require('./fieldWorker.model')
+const fieldWorker = require('./fieldWorker.model');
+const review = require('./review.model');
+const service = require('./service.model');
+const gallery = require('./gallery.model')
 
 let shop = sequelize.define('shop', {
     name: datatype.STRING,
@@ -22,9 +25,27 @@ let shop = sequelize.define('shop', {
     password: datatype.STRING
 });
 
-
+shop.hasMany(review);
+shop.hasMany(service);
+shop.hasMany(gallery);
 shop.belongsTo(category);
 shop.belongsTo(fieldWorker, { foregin_key: { allowNull: true } });
+
+review.belongsTo(shop)
+service.belongsTo(shop)
+gallery.belongsTo(shop);
+
+
+gallery.sync().then(() => {
+    console.log('New table created');
+})
+review.sync().then(() => {
+    console.log('New table created');
+})
+
+service.sync().then(() => {
+    console.log('New table created');
+})
 
 shop.sync().then(() => {
     console.log('New table created');

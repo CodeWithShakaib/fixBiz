@@ -92,6 +92,12 @@ function get(req, res) {
                     model: catagory
                 }, {
                     model: fieldWorker
+                }, {
+                    model: review
+                }, {
+                    model: service
+                }, {
+                    model: gallery
                 }]
             }).then(record => {
                 return apiRes.apiSuccess(res, [record], "success")
@@ -183,10 +189,23 @@ function getAll(req, res) {
             model: catagory
         }, {
             model: fieldWorker
+        }, {
+            model: review
+        }, {
+            model: service
         }]
     }).then((shops) => {
         return apiRes.apiSuccess(res, shops, "success")
     })
+}
+
+function getByCatagoryId(req, res) {
+
+    shop.findAll({
+        where: { categoryId: req.body.category_id }
+    }).then((record) => { return apiRes.apiSuccess(res, record, "success") })
+
+
 }
 
 module.exports = {
@@ -194,5 +213,6 @@ module.exports = {
     get,
     del,
     update,
-    getAll
+    getAll,
+    getByCatagoryId
 }

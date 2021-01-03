@@ -8,11 +8,9 @@ let review = sequelize.define('review', {
     rating: datatype.STRING
 });
 
-review.belongsTo(shop);
+// review.belongsTo(shop);
 review.belongsTo(user);
 
-review.sync().then(() => {
-    console.log('New table created');
-})
+
 
 module.exports = review

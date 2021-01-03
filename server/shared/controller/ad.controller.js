@@ -8,6 +8,7 @@ const service = require("../models/service.model")
 const gallery = require("../models/gallery.model")
 const fieldWorker = require("../models/fieldWorker.model")
 const { response } = require("../../config/express")
+const shop = require("../models/shop.model")
 
 function create(req, res) {
 
@@ -46,11 +47,20 @@ function create(req, res) {
         duration: params.duration,
         start_at: params.start_at,
         end_at: params.end_at,
+        transaction_id: params.transaction_id,
+        transaction_amount: params.transaction_amount,
+        transaction_method: params.transaction_method,
+        status: params.status,
         shopId: params.shop_id,
         categoryId: params.category_id
     });
-    return record.save().then((record) => {
-        apiRes.apiSuccess(res, [record], "Success", )
+    record.save().then((record) => {
+        ad.findByPk(record.id, {
+            include: [
+                { model: shop }, { model: catagory }
+            ]
+        }).then((record) => { return apiRes.apiSuccess(res, [record], "Success", ) })
+
     })
 }
 
@@ -58,7 +68,14 @@ function create(req, res) {
 function get(req, res) {
     ad.count({ where: { id: req.params.id } }).then(count => {
         if (count != 0) {
-            ad.findOne({ where: { id: req.params.id } }).then(record => {
+            ad.findOne({
+                where: { id: req.params.id },
+                include: [{
+                    model: shop
+                }, {
+                    model: catagory
+                }]
+            }).then(record => {
                 return apiRes.apiSuccess(res, [record], "success")
             })
         } else {
@@ -122,11 +139,22 @@ function update(req, res) {
                 duration: params.duration,
                 start_at: params.start_at,
                 end_at: params.end_at,
+                transaction_id: params.transaction_id,
+                transaction_amount: params.transaction_amount,
+                transaction_method: params.transaction_method,
+                status: params.status,
                 shopId: params.shop_id,
                 categoryId: params.category_id
             }, { where: { id: req.params.id } });
 
-            ad.findOne({ where: { id: req.params.id } }).then(record => {
+            ad.findOne({
+                where: { id: req.params.id },
+                include: [{
+                    model: shop
+                }, {
+                    model: catagory
+                }]
+            }).then(record => {
                 return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             })
 
@@ -140,7 +168,11 @@ function update(req, res) {
 
 function getAll(req, res) {
 
-    ad.findAll().then((ads) => {
+    ad.findAll({
+        include: [{
+            model: shop
+        }, { model: catagory }]
+    }).then((ads) => {
         return apiRes.apiSuccess(res, ads, "success")
     })
 }

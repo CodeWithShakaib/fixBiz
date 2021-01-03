@@ -8,5 +8,6 @@ router.get('/:id/get', shopCrtl.get);
 router.delete('/:id/delete', shopCrtl.del);
 router.put('/:id/update', shopCrtl.update);
 router.get('/get', shopCrtl.getAll);
+router.put('/getByCategoryId', shopCrtl.getByCatagoryId)
 
 module.exports = router

@@ -10,6 +10,10 @@ let ad = sequelize.define('ad', {
     video_url: datatype.STRING,
     views_count: datatype.INTEGER,
     duration: datatype.INTEGER,
+    transaction_id: datatype.STRING,
+    transaction_amount: datatype.STRING,
+    transaction_method: datatype.STRING,
+    status: datatype.STRING,
     start_at: datatype.TIME,
     end_at: datatype.TIME
 });

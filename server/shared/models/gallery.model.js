@@ -7,11 +7,11 @@ let gallery = sequelize.define('gallery', {
     img_url: datatype.STRING
 });
 
-gallery.belongsTo(shop);
+// gallery.belongsTo(shop);
 
 
-gallery.sync().then(() => {
-    console.log('New table created');
-})
+// gallery.sync().then(() => {
+//     console.log('New table created');
+// })
 
 module.exports = gallery
