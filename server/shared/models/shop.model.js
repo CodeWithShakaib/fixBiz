@@ -15,10 +15,14 @@ let shop = sequelize.define('shop', {
     longitude: datatype.FLOAT,
     latitude: datatype.FLOAT,
     opening_time: datatype.TIME,
-    closing_time: datatype.TIME
+    closing_time: datatype.TIME,
+    owner_name: datatype.STRING,
+    phone_number: datatype.STRING,
+    email: datatype.STRING,
+    password: datatype.STRING
 });
 
-shop.belongsTo(user);
+
 shop.belongsTo(category);
 shop.belongsTo(fieldWorker, { foregin_key: { allowNull: true } });
 

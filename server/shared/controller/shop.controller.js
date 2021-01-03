@@ -14,38 +14,70 @@ function create(req, res) {
 
     params = req.body
 
-    if (req.files && req.files.image) {
-        var image = req.files.image
-        var img_url = "/shop_img/" + "_" + Date.now() + "_" + image.name;
+    shop.findAll({
+        where: {
+            [Op.or]: [
+                { email: params.email },
+                { phone_number: params.phone_number }
+            ]
+        }
+    }).then(record => {
+        console.log(record.length)
 
-        image.mv(process.cwd() + '/server/public/' + img_url, function(err) {
-            if (err)
-                return apiRes.apiError(
-                    res, "Image does't uploaded sucessfully.", err)
-        });
+        if (record.length > 0) {
+            apiRes.apiError(
+                res, "Email or phone number already exists.", null)
+        } else {
+            if (req.files && req.files.image) {
+                var image = req.files.image
+                var img_url = "/shop_img/" + "_" + Date.now() + "_" + image.name;
 
-    }
+                image.mv(process.cwd() + '/server/public/' + img_url, function(err) {
+                    if (err)
+                        return apiRes.apiError(
+                            res, "Image does't uploaded sucessfully.", err)
+                });
 
-    const record = shop.build({
-        name: params.name,
-        address: params.address,
-        img_url: img_url,
-        verification_status: false,
-        transaction_id: params.transaction_id,
-        transaction_amount: params.transaction_amount,
-        transaction_method: params.transaction_method,
-        longitude: params.longitude,
-        latitude: params.latitude,
-        opening_time: params.opening_time,
-        closing_time: params.closing_time,
-        userId: params.user_id,
-        categoryId: params.category_id,
-        fieldWorkerId: params.fieldWorker_id
-    });
-    return record.save().then((record) => {
-        apiRes.apiSuccess(res, [record], "Success", )
-    }).catch((err) => {
-        return apiRes.apiError(res, err.message)
+            }
+
+            const record = shop.build({
+                name: params.name,
+                address: params.address,
+                img_url: img_url,
+                verification_status: false,
+                transaction_id: params.transaction_id,
+                transaction_amount: params.transaction_amount,
+                transaction_method: params.transaction_method,
+                longitude: params.longitude,
+                latitude: params.latitude,
+                opening_time: params.opening_time,
+                closing_time: params.closing_time,
+                categoryId: params.category_id,
+                fieldWorkerId: params.fieldWorker_id,
+                owner_name: params.owner_name,
+                email: params.email,
+                password: params.password
+            });
+            record.save().then((record) => {
+                shop.findOne({
+                    include: [{ // Notice `include` takes an ARRAY
+                        model: catagory
+                    }, {
+                        model: fieldWorker
+                    }],
+
+                    where: {
+                        id: record.id
+                    }
+
+
+                }).then((record) => { return apiRes.apiSuccess(res, [record], "Success", ) })
+
+            }).catch((err) => {
+                return apiRes.apiError(res, err.message)
+
+            })
+        }
 
     })
 }
@@ -54,7 +86,14 @@ function create(req, res) {
 function get(req, res) {
     shop.count({ where: { id: req.params.id } }).then(count => {
         if (count != 0) {
-            shop.findOne({ where: { id: req.params.id } }).then(record => {
+            shop.findOne({
+                where: { id: req.params.id },
+                include: [{
+                    model: catagory
+                }, {
+                    model: fieldWorker
+                }]
+            }).then(record => {
                 return apiRes.apiSuccess(res, [record], "success")
             })
         } else {
@@ -111,10 +150,21 @@ function update(req, res) {
                 closing_time: params.closing_time,
                 userId: params.user_id,
                 categoryId: params.category_id,
-                fieldWorkerId: params.fieldWorker_id
+                fieldWorkerId: params.fieldWorker_id,
+                owner_name: params.owner_name,
+                email: params.email,
+                phone_number: params.phone_number
+
             }, { where: { id: req.params.id } });
 
-            shop.findOne({ where: { id: req.params.id } }).then(record => {
+            shop.findOne({
+                where: { id: req.params.id },
+                include: [{
+                    model: catagory
+                }, {
+                    model: fieldWorker
+                }]
+            }).then(record => {
                 return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             })
 
@@ -128,7 +178,13 @@ function update(req, res) {
 
 function getAll(req, res) {
 
-    shop.findAll().then((shops) => {
+    shop.findAll({
+        include: [{
+            model: catagory
+        }, {
+            model: fieldWorker
+        }]
+    }).then((shops) => {
         return apiRes.apiSuccess(res, shops, "success")
     })
 }
