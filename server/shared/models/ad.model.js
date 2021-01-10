@@ -18,11 +18,9 @@ let ad = sequelize.define('ad', {
     end_at: datatype.TIME
 });
 
-ad.belongsTo(shop);
+
 ad.belongsTo(category);
 
-ad.sync().then(() => {
-    console.log('New table created');
-})
+
 
 module.exports = ad

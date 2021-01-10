@@ -9,6 +9,8 @@ const service = require("../models/service.model")
 const gallery = require("../models/gallery.model")
 const fieldWorker = require("../models/fieldWorker.model")
 const { response } = require("../../config/express")
+const user = require("../models/user.model")
+const city = require("../models/city.model")
 
 function create(req, res) {
 
@@ -56,7 +58,9 @@ function create(req, res) {
                 fieldWorkerId: params.fieldWorker_id,
                 owner_name: params.owner_name,
                 email: params.email,
-                password: params.password
+                password: params.password,
+                phone_number: params.phone_number,
+                cityId: params.city_id
             });
             record.save().then((record) => {
                 shop.findOne({
@@ -93,12 +97,15 @@ function get(req, res) {
                 }, {
                     model: fieldWorker
                 }, {
-                    model: review
+                    model: review,
+                    include: [{ model: user }]
                 }, {
                     model: service
                 }, {
                     model: gallery
-                }]
+                }, {
+                    model: city
+                }, { model: ad }]
             }).then(record => {
                 return apiRes.apiSuccess(res, [record], "success")
             })
@@ -159,7 +166,8 @@ function update(req, res) {
                 fieldWorkerId: params.fieldWorker_id,
                 owner_name: params.owner_name,
                 email: params.email,
-                phone_number: params.phone_number
+                phone_number: params.phone_number,
+                city: params.city_id
 
             }, { where: { id: req.params.id } });
 
@@ -169,7 +177,14 @@ function update(req, res) {
                     model: catagory
                 }, {
                     model: fieldWorker
-                }]
+                }, {
+                    model: review,
+                    include: [{ model: user }]
+                }, {
+                    model: service
+                }, {
+                    model: city
+                }, { model: ad }]
             }).then(record => {
                 return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             })
@@ -190,9 +205,14 @@ function getAll(req, res) {
         }, {
             model: fieldWorker
         }, {
-            model: review
+            model: review,
+            include: [{ model: user }]
         }, {
             model: service
+        }, {
+            model: city
+        }, {
+            model: ad
         }]
     }).then((shops) => {
         return apiRes.apiSuccess(res, shops, "success")
@@ -202,10 +222,72 @@ function getAll(req, res) {
 function getByCatagoryId(req, res) {
 
     shop.findAll({
-        where: { categoryId: req.body.category_id }
+        where: { categoryId: req.body.category_id },
+        include: [{
+            model: catagory
+        }, {
+            model: fieldWorker
+        }, {
+            model: review,
+            include: [{ model: user }]
+        }, {
+            model: service
+        }, {
+            model: city
+        }, {
+            model: ad
+        }]
     }).then((record) => { return apiRes.apiSuccess(res, record, "success") })
 
+}
 
+function searchFilter(req, res) {
+    shop.findAll({
+        where: {
+            [Op.or]: [{ categoryId: req.body.category_id }, { cityId: req.body.city_id }]
+        },
+        include: [{
+            model: catagory
+        }, {
+            model: fieldWorker
+        }, {
+            model: review,
+            include: [{ model: user }]
+        }, {
+            model: service
+        }, {
+            model: city
+        }, {
+            model: ad
+        }]
+    }).then((record) => {
+        service.findAll({
+            attributes: ['shopId'],
+            // where: { id: req.body.service_id },
+            include: [{
+                model: shop,
+                include: [{
+                    model: catagory
+                }, {
+                    model: fieldWorker
+                }, {
+                    model: review,
+                    include: [{ model: user }]
+                }, {
+                    model: service
+                }, {
+                    model: city
+                }, {
+                    model: ad
+                }]
+            }]
+        }).then((record) => { return apiRes.apiSuccess(res, record, "success") })
+
+
+
+
+
+    })
 }
 
 module.exports = {
@@ -214,5 +296,6 @@ module.exports = {
     del,
     update,
     getAll,
-    getByCatagoryId
+    getByCatagoryId,
+    searchFilter
 }

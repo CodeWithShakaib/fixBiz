@@ -5,7 +5,9 @@ const category = require('./category.model')
 const fieldWorker = require('./fieldWorker.model');
 const review = require('./review.model');
 const service = require('./service.model');
-const gallery = require('./gallery.model')
+const gallery = require('./gallery.model');
+const city = require('./city.model');
+const ad = require('./ad.model');
 
 let shop = sequelize.define('shop', {
     name: datatype.STRING,
@@ -28,13 +30,15 @@ let shop = sequelize.define('shop', {
 shop.hasMany(review);
 shop.hasMany(service);
 shop.hasMany(gallery);
+shop.hasMany(ad);
 shop.belongsTo(category);
+shop.belongsTo(city);
 shop.belongsTo(fieldWorker, { foregin_key: { allowNull: true } });
 
 review.belongsTo(shop)
 service.belongsTo(shop)
 gallery.belongsTo(shop);
-
+ad.belongsTo(shop)
 
 gallery.sync().then(() => {
     console.log('New table created');
@@ -44,6 +48,10 @@ review.sync().then(() => {
 })
 
 service.sync().then(() => {
+    console.log('New table created');
+})
+
+ad.sync().then(() => {
     console.log('New table created');
 })
 

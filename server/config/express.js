@@ -9,6 +9,7 @@ const adRoute = require("../shared/routes/ad.router")
 const reviewRoute = require("../shared/routes/review.router")
 const serviceRoute = require("../shared/routes/service.router")
 const galleryRoute = require("../shared/routes/gallery.router")
+const cityRoute = require("../shared/routes/city.router")
 const cors = require('cors');
 
 const app = express()
@@ -46,5 +47,8 @@ app.use("/api/service", serviceRoute)
 
 //gallery management route
 app.use("/api/gallery", galleryRoute)
+
+//city management route
+app.use("/api/city", cityRoute)
 
 module.exports = app
