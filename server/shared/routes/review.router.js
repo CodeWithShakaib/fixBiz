@@ -8,5 +8,6 @@ router.get('/:id/get', review.get);
 router.delete('/:id/delete', review.del);
 router.put('/:id/update', review.update);
 router.get('/get', review.getAll);
+router.put('/getReviewsByShopId', review.getReviewsByShopId);
 
 module.exports = router

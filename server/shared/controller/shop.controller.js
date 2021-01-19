@@ -11,6 +11,9 @@ const fieldWorker = require("../models/fieldWorker.model")
 const { response } = require("../../config/express")
 const user = require("../models/user.model")
 const city = require("../models/city.model")
+const _ = require('lodash');
+const { isDate } = require("lodash")
+const geolib = require('geolib');
 
 function create(req, res) {
 
@@ -86,6 +89,93 @@ function create(req, res) {
     })
 }
 
+function searchByWord(req, res) {
+
+    service.findAll({
+        attributes: ['shopId'],
+        // exclude: ['shopId'],
+        where: {
+            name: {
+                [Op.like]: '%' + req.body.word + '%'
+            }
+        }
+
+    }).then((record) => {
+        services_ids = []
+        record.forEach(element => {
+            services_ids.push(element.shopId)
+        });
+
+
+
+        catagory.findAll({
+            attributes: ['id'],
+            // exclude: ['shopId'],
+            where: {
+                name: {
+                    [Op.like]: '%' + req.body.word + '%'
+                }
+            }
+
+        }).then((record) => {
+            catagories_ids = []
+            record.forEach(element => {
+                catagories_ids.push(element.shopId)
+            });
+
+
+            shop.findAll({
+                where: {
+                    [Op.or]: [{
+                        categoryId: {
+                            [Op.in]: catagories_ids
+                        }
+                    }, {
+                        name: {
+                            [Op.like]: '%' + req.body.word + '%'
+                        }
+                    }, {
+                        id: {
+                            [Op.in]: services_ids
+                        }
+                    }]
+                },
+                include: [{
+                    model: catagory
+                }, {
+                    model: fieldWorker
+                }, {
+                    model: review,
+                    include: [{ model: user }]
+                }, {
+                    model: service
+                }, {
+                    model: city
+                }, {
+                    model: ad
+                }]
+            }).then((record1) => {
+                final_result = []
+                record1.forEach(element => {
+                    distance = geolib.getDistance({ latitude: req.body.current_location.latitude, longitude: req.body.current_location.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
+                    if (distance < 50.0) {
+                        element.distance = distance
+                        final_result.push(element)
+                    }
+                });
+
+                // console.log(Object.keys(final_result[0]))
+
+                return apiRes.apiSuccess(res, final_result, "success")
+
+            })
+
+        })
+
+    })
+
+
+}
 
 function get(req, res) {
     shop.count({ where: { id: req.params.id } }).then(count => {
@@ -219,6 +309,8 @@ function getAll(req, res) {
     })
 }
 
+
+
 function getByCatagoryId(req, res) {
 
     shop.findAll({
@@ -237,58 +329,75 @@ function getByCatagoryId(req, res) {
         }, {
             model: ad
         }]
-    }).then((record) => { return apiRes.apiSuccess(res, record, "success") })
+    }).then((record) => {
+        final_result = []
+        record.forEach(element => {
+            distance = geolib.getDistance({ latitude: req.body.current_location.latitude, longitude: req.body.current_location.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
+            if (distance < 50.0) {
+                element.distance = distance
+                final_result.push(element)
+            }
+        });
+
+        return apiRes.apiSuccess(res, final_result, "success")
+    })
 
 }
 
 function searchFilter(req, res) {
-    shop.findAll({
+
+    service.findAll({
+        attributes: ['shopId'],
+        // exclude: ['shopId'],
         where: {
-            [Op.or]: [{ categoryId: req.body.category_id }, { cityId: req.body.city_id }]
-        },
-        include: [{
-            model: catagory
-        }, {
-            model: fieldWorker
-        }, {
-            model: review,
-            include: [{ model: user }]
-        }, {
-            model: service
-        }, {
-            model: city
-        }, {
-            model: ad
-        }]
+            name: {
+                [Op.like]: `%${req.body.service}%`
+            }
+        }
+
     }).then((record) => {
-        service.findAll({
-            attributes: ['shopId'],
-            // where: { id: req.body.service_id },
-            include: [{
-                model: shop,
-                include: [{
-                    model: catagory
-                }, {
-                    model: fieldWorker
-                }, {
-                    model: review,
-                    include: [{ model: user }]
-                }, {
-                    model: service
-                }, {
-                    model: city
-                }, {
-                    model: ad
+        ids = []
+        record.forEach(element => {
+            ids.push(element.shopId)
+        });
+
+        shop.findAll({
+            where: {
+                [Op.or]: [{ categoryId: req.body.category_id }, { cityId: req.body.city_id }, {
+                    id: {
+                        [Op.in]: ids
+                    }
                 }]
+            },
+            include: [{
+                model: catagory
+            }, {
+                model: fieldWorker
+            }, {
+                model: review,
+                include: [{ model: user }]
+            }, {
+                model: service
+            }, {
+                model: city
+            }, {
+                model: ad
             }]
-        }).then((record) => { return apiRes.apiSuccess(res, record, "success") })
+        }).then((record1) => {
+            final_result = []
+            record1.forEach(element => {
+                distance = geolib.getDistance({ latitude: req.body.current_location.latitude, longitude: req.body.current_location.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
+                if (distance < 50.0) {
+                    element.distance = distance
+                    final_result.push(element)
+                }
+            });
 
-
-
-
-
+            return apiRes.apiSuccess(res, final_result, "success")
+        })
     })
 }
+
 
 module.exports = {
     create,
@@ -297,5 +406,6 @@ module.exports = {
     update,
     getAll,
     getByCatagoryId,
-    searchFilter
+    searchFilter,
+    searchByWord
 }

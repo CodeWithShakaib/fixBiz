@@ -74,7 +74,7 @@ function update(req, res) {
     params = req.body
     const record = review.update({
         body: params.body,
-        rating: params.body,
+        rating: params.rating,
         userId: params.user_id,
         shopId: params.shop_id
     }, { where: { id: req.params.id } });
@@ -103,10 +103,22 @@ function getAll(req, res) {
     })
 }
 
+function getReviewsByShopId(req, res) {
+    review.findAll({
+        where: { shopId: req.body.shop_id },
+        include: [{
+            model: shop
+        }, { model: user }]
+    }).then((reviews) => {
+        return apiRes.apiSuccess(res, reviews, "success")
+    })
+}
+
 module.exports = {
     create,
     get,
     del,
     update,
-    getAll
+    getAll,
+    getReviewsByShopId
 }

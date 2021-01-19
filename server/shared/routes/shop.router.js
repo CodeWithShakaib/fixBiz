@@ -9,6 +9,7 @@ router.put('/:id/update', shopCrtl.update);
 router.get('/get', shopCrtl.getAll);
 router.put('/getByCategoryId', shopCrtl.getByCatagoryId)
 router.post('/searchFilter', shopCrtl.searchFilter)
+router.post('/searchByWord', shopCrtl.searchByWord)
 
 
 module.exports = router

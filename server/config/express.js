@@ -10,6 +10,8 @@ const reviewRoute = require("../shared/routes/review.router")
 const serviceRoute = require("../shared/routes/service.router")
 const galleryRoute = require("../shared/routes/gallery.router")
 const cityRoute = require("../shared/routes/city.router")
+const feedbackRoute = require("../shared/routes/feedback.router")
+
 const cors = require('cors');
 
 const app = express()
@@ -50,5 +52,8 @@ app.use("/api/gallery", galleryRoute)
 
 //city management route
 app.use("/api/city", cityRoute)
+
+//feedback management route
+app.use("/api/feedback", feedbackRoute)
 
 module.exports = app
