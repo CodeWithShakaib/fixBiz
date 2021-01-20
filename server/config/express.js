@@ -11,6 +11,8 @@ const serviceRoute = require("../shared/routes/service.router")
 const galleryRoute = require("../shared/routes/gallery.router")
 const cityRoute = require("../shared/routes/city.router")
 const feedbackRoute = require("../shared/routes/feedback.router")
+const authRoute = require("../authentication/auth.router")
+
 
 const cors = require('cors');
 
@@ -55,5 +57,8 @@ app.use("/api/city", cityRoute)
 
 //feedback management route
 app.use("/api/feedback", feedbackRoute)
+
+// authentication route
+app.use("/api/auth", authRoute)
 
 module.exports = app
