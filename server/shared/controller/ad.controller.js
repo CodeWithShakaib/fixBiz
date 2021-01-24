@@ -177,10 +177,40 @@ function getAll(req, res) {
     })
 }
 
+function getAdsByCatagoryId(req, res) {
+    ad.findAll({
+        where: { categoryId: req.body.category_id },
+        include: [{
+            model: shop
+        }, {
+            model: catagory
+        }]
+    }).then((record) => {
+        return apiRes.apiSuccess(res, record, "success")
+    })
+}
+
+function getAdsByShopId(req, res) {
+    ad.findAll({
+        where: { shopId: req.body.shop_id },
+        include: [{
+            model: shop
+        }, {
+            model: catagory
+        }]
+    }).then((record) => {
+        return apiRes.apiSuccess(res, record, "success")
+    }).catch((err) => {
+        return apiRes.apiError(res, err, "shop id not found")
+    })
+}
+
 module.exports = {
     create,
     get,
     del,
     update,
-    getAll
+    getAll,
+    getAdsByCatagoryId,
+    getAdsByShopId
 }

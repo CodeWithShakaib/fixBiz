@@ -24,7 +24,8 @@ let shop = sequelize.define('shop', {
     owner_name: datatype.STRING,
     phone_number: datatype.STRING,
     email: datatype.STRING,
-    password: datatype.STRING
+    password: datatype.STRING,
+    distance: datatype.FLOAT
 });
 
 shop.hasMany(review);

@@ -157,14 +157,12 @@ function searchByWord(req, res) {
             }).then((record1) => {
                 final_result = []
                 record1.forEach(element => {
-                    distance = geolib.getDistance({ latitude: req.body.current_location.latitude, longitude: req.body.current_location.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
+                    distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
                     if (distance < 50.0) {
-                        element.distance = distance
-                        final_result.push(element)
+                        element.distance = distance;
+                        final_result.push(element);
                     }
                 });
-
-                // console.log(Object.keys(final_result[0]))
 
                 return apiRes.apiSuccess(res, final_result, "success")
 
@@ -332,7 +330,7 @@ function getByCatagoryId(req, res) {
     }).then((record) => {
         final_result = []
         record.forEach(element => {
-            distance = geolib.getDistance({ latitude: req.body.current_location.latitude, longitude: req.body.current_location.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
+            distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
             if (distance < 50.0) {
                 element.distance = distance
                 final_result.push(element)
@@ -386,7 +384,7 @@ function searchFilter(req, res) {
         }).then((record1) => {
             final_result = []
             record1.forEach(element => {
-                distance = geolib.getDistance({ latitude: req.body.current_location.latitude, longitude: req.body.current_location.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
+                distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
                 if (distance < 50.0) {
                     element.distance = distance
                     final_result.push(element)
