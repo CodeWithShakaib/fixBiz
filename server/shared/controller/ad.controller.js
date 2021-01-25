@@ -177,6 +177,25 @@ function getAll(req, res) {
     })
 }
 
+function getAdsOnDashboard(req, res) {
+
+    ad.findAll({
+        include: [{
+            model: shop
+        }, { model: catagory }],
+        where: {
+            [Op.and]: {
+                status: 'ACTIVE',
+                end_at: {
+                    [Op.gt]: Date.now()
+                }
+            }
+        }
+    }).then((ads) => {
+        return apiRes.apiSuccess(res, ads, "success")
+    })
+}
+
 function getAdsByCatagoryId(req, res) {
     ad.findAll({
         where: { categoryId: req.body.category_id },
@@ -212,5 +231,6 @@ module.exports = {
     update,
     getAll,
     getAdsByCatagoryId,
-    getAdsByShopId
+    getAdsByShopId,
+    getAdsOnDashboard
 }

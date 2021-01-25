@@ -1,5 +1,6 @@
 const sequelize = require('../../config/db.connection');
 const datatype = require('sequelize');
+const shop = require('./shop.model');
 
 let fieldWorker = sequelize.define('fieldWorker', {
     f_name: datatype.STRING,
@@ -10,7 +11,6 @@ let fieldWorker = sequelize.define('fieldWorker', {
     phone_number: datatype.STRING,
     gender: datatype.STRING
 });
-
 
 
 fieldWorker.sync().then(() => {

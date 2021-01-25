@@ -7,5 +7,6 @@ router.get('/:id/get', fieldWorkerCrtl.get);
 router.delete('/:id/delete', fieldWorkerCrtl.del);
 router.put('/:id/update', fieldWorkerCrtl.update);
 router.get('/get', fieldWorkerCrtl.getAll);
+router.get('/getShops', fieldWorkerCrtl.getShopsByFieldWorkerId);
 
 module.exports = router

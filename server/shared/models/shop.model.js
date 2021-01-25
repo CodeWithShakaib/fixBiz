@@ -9,11 +9,12 @@ const gallery = require('./gallery.model');
 const city = require('./city.model');
 const ad = require('./ad.model');
 
+
 let shop = sequelize.define('shop', {
     name: datatype.STRING,
     address: datatype.STRING,
     img_url: datatype.STRING,
-    verification_status: datatype.BOOLEAN,
+    verification_status: datatype.STRING,
     transaction_id: datatype.STRING,
     transaction_amount: datatype.STRING,
     transaction_method: datatype.STRING,
@@ -55,6 +56,8 @@ service.sync().then(() => {
 ad.sync().then(() => {
     console.log('New table created');
 })
+
+
 
 shop.sync().then(() => {
     console.log('New table created');

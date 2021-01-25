@@ -60,7 +60,12 @@ function create(req, res) {
 function get(req, res) {
     fieldWorker.count({ where: { id: req.params.id } }).then(count => {
         if (count != 0) {
-            fieldWorker.findOne({ where: { id: req.params.id } }).then(record => {
+            fieldWorker.findOne({
+                where: { id: req.params.id },
+                include: [{
+                    model: shop
+                }]
+            }).then(record => {
                 return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             })
         } else {
@@ -113,7 +118,12 @@ function update(req, res) {
                 gender: params.gender
             }, { where: { id: req.params.id } });
 
-            fieldWorker.findOne({ where: { id: req.params.id } }).then(record => {
+            fieldWorker.findOne({
+                where: { id: req.params.id },
+                include: [{
+                    model: shop
+                }]
+            }).then(record => {
                 return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             })
 
@@ -127,8 +137,18 @@ function update(req, res) {
 
 function getAll(req, res) {
 
-    fieldWorker.findAll().then((fieldWorkers) => {
+    fieldWorker.findAll({
+        include: [{
+            model: shop
+        }]
+    }).then((fieldWorkers) => {
         return apiRes.apiSuccess(res, fieldWorkers, "success")
+    })
+}
+
+function getShopsByFieldWorkerId(req, res) {
+    shop.findAll({ where: { fieldWorkerId: req.query.id } }).then((record) => {
+        return apiRes.apiSuccess(res, record);
     })
 }
 
@@ -137,5 +157,6 @@ module.exports = {
     get,
     del,
     update,
-    getAll
+    getAll,
+    getShopsByFieldWorkerId
 }

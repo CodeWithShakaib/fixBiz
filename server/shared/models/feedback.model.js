@@ -5,13 +5,15 @@ const user = require('./user.model');
 
 let feedback = sequelize.define('feedback', {
     title: datatype.STRING,
-    body: datatype.STRING
+    body: datatype.STRING,
+    rating: datatype.INTEGER
+
 });
 
 feedback.belongsTo(shop, { foregin_key: { allowNull: true } });
 feedback.belongsTo(user, { foregin_key: { allowNull: true } });
 
-feedback.sync().then(() => {
+feedback.sync({ force: true }).then(() => {
     console.log('New table created');
 })
 

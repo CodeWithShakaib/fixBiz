@@ -49,7 +49,7 @@ function create(req, res) {
                 name: params.name,
                 address: params.address,
                 img_url: img_url,
-                verification_status: false,
+                verification_status: params.verification_status,
                 transaction_id: params.transaction_id,
                 transaction_amount: params.transaction_amount,
                 transaction_method: params.transaction_method,
@@ -97,8 +97,10 @@ function searchByWord(req, res) {
         where: {
             name: {
                 [Op.like]: '%' + req.body.word + '%'
-            }
+            },
+            [Op.or]: { verification_status: 'ACTIVE', verification_status: 'TRIAL' }
         }
+
 
     }).then((record) => {
         services_ids = []
@@ -155,24 +157,25 @@ function searchByWord(req, res) {
                     model: ad
                 }]
             }).then((record1) => {
-                final_result = []
-                record1.forEach(element => {
-                    distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
-                    if (distance < 50.0) {
-                        element.distance = distance;
-                        final_result.push(element);
-                    }
-                });
+                if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
+                    return apiRes.apiSuccess(res, record1, "success")
+                } else {
+                    final_result = []
+                    record1.forEach(element => {
+                        distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
+                        if (distance < 50.0) {
+                            element.distance = distance;
+                            final_result.push(element);
+                        }
+                    });
 
-                return apiRes.apiSuccess(res, final_result, "success")
+                    return apiRes.apiSuccess(res, final_result, "success")
+                }
 
             })
 
         })
-
     })
-
-
 }
 
 function get(req, res) {
@@ -312,7 +315,7 @@ function getAll(req, res) {
 function getByCatagoryId(req, res) {
 
     shop.findAll({
-        where: { categoryId: req.body.category_id },
+        where: { categoryId: req.body.category_id, [Op.or]: { verification_status: 'ACTIVE', verification_status: 'TRIAL' } },
         include: [{
             model: catagory
         }, {
@@ -328,16 +331,23 @@ function getByCatagoryId(req, res) {
             model: ad
         }]
     }).then((record) => {
-        final_result = []
-        record.forEach(element => {
-            distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
-            if (distance < 50.0) {
-                element.distance = distance
-                final_result.push(element)
-            }
-        });
+        if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
+            return apiRes.apiSuccess(res, record, "success")
+        } else {
+            final_result = []
+            record.forEach(element => {
+                distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
+                if (distance < 50.0) {
+                    element.distance = distance;
+                    final_result.push(element);
+                }
+            });
 
-        return apiRes.apiSuccess(res, final_result, "success")
+            return apiRes.apiSuccess(res, final_result, "success")
+        }
+
+
+
     })
 
 }
@@ -350,7 +360,8 @@ function searchFilter(req, res) {
         where: {
             name: {
                 [Op.like]: `%${req.body.service}%`
-            }
+            },
+            [Op.or]: { verification_status: 'ACTIVE', verification_status: 'TRIAL' }
         }
 
     }).then((record) => {
@@ -382,20 +393,33 @@ function searchFilter(req, res) {
                 model: ad
             }]
         }).then((record1) => {
-            final_result = []
-            record1.forEach(element => {
-                distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
-                if (distance < 50.0) {
-                    element.distance = distance
-                    final_result.push(element)
-                }
-            });
 
-            return apiRes.apiSuccess(res, final_result, "success")
+            if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
+                return apiRes.apiSuccess(res, record1, "success")
+            } else {
+                final_result = []
+                record1.forEach(element => {
+                    distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
+                    if (distance < 50.0) {
+                        element.distance = distance;
+                        final_result.push(element);
+                    }
+                });
+
+                return apiRes.apiSuccess(res, final_result, "success")
+            }
+
         })
     })
 }
 
+function activateShop(req, res) {
+    shop.update({
+        verification_status: 'ACTIVE'
+    }, { where: { id: req.params.id } }).then((record) => {
+        return apiRes.apiSuccess(res)
+    })
+}
 
 module.exports = {
     create,
@@ -405,5 +429,6 @@ module.exports = {
     getAll,
     getByCatagoryId,
     searchFilter,
-    searchByWord
+    searchByWord,
+    activateShop
 }

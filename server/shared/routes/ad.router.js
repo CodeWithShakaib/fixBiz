@@ -9,6 +9,8 @@ router.put('/:id/update', adCrtl.update);
 router.get('/get', adCrtl.getAll);
 router.post('/getAdsByCatagoryId', adCrtl.getAdsByCatagoryId);
 router.post('/getAdsByShopId', adCrtl.getAdsByShopId);
+router.get('/getAdsOnDashboard', adCrtl.getAdsOnDashboard);
+
 
 
 module.exports = router

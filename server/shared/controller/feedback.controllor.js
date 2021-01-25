@@ -20,7 +20,8 @@ function create(req, res) {
         title: params.title,
         body: params.body,
         userId: params.user_id,
-        shopId: params.shop_id
+        shopId: params.shop_id,
+        rating: params.rating
     });
     record.save().then((record) => {
         feedback.findByPk(record.id, {
@@ -76,7 +77,8 @@ function update(req, res) {
         title: params.title,
         body: params.body,
         userId: params.user_id,
-        shopId: params.shop_id
+        shopId: params.shop_id,
+        rating: params.rating
     }, { where: { id: req.params.id } });
 
     feedback.findOne({
