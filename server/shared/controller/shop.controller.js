@@ -315,7 +315,7 @@ function getAll(req, res) {
 function getByCatagoryId(req, res) {
 
     shop.findAll({
-        where: { categoryId: req.body.category_id, [Op.or]: { verification_status: 'ACTIVE', verification_status: 'TRIAL' } },
+        where: { categoryId: req.body.category_id, verification_status: 'ACTIVE' },
         include: [{
             model: catagory
         }, {
