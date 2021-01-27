@@ -14,8 +14,13 @@ let ad = sequelize.define('ad', {
     transaction_amount: datatype.STRING,
     transaction_method: datatype.STRING,
     status: datatype.STRING,
-    start_at: datatype.TIME,
-    end_at: datatype.TIME
+    isLive: datatype.BOOLEAN,
+    start_at: {
+        type: 'TIMESTAMP'
+    },
+    end_at: {
+        type: 'TIMESTAMP'
+    }
 });
 
 

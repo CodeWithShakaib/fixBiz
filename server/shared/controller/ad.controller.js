@@ -1,5 +1,6 @@
 const apiRes = require("../../config/api.response")
 const sequelize = require("../../config/db.connection")
+const Sequelize = require('sequelize');
 const { Op } = require("sequelize")
 const catagory = require("../models/category.model")
 const ad = require("../models/ad.model")
@@ -9,6 +10,9 @@ const gallery = require("../models/gallery.model")
 const fieldWorker = require("../models/fieldWorker.model")
 const { response } = require("../../config/express")
 const shop = require("../models/shop.model")
+
+var today = new Date();
+today.setHours(today.getHours() + 5);
 
 function create(req, res) {
 
@@ -178,21 +182,26 @@ function getAll(req, res) {
 }
 
 function getAdsOnDashboard(req, res) {
-
     ad.findAll({
         include: [{
             model: shop
         }, { model: catagory }],
         where: {
-            [Op.and]: {
-                status: 'ACTIVE',
-                end_at: {
-                    [Op.gt]: Date.now()
-                }
+            status: 'ACTIVE',
+            end_at: {
+                [Op.gt]: today
             }
         }
+
     }).then((ads) => {
-        return apiRes.apiSuccess(res, ads, "success")
+        live_ads = []
+
+        ads.forEach(ad => {
+            ad.isLive = true;
+            live_ads.push(ad);
+        });
+
+        return apiRes.apiSuccess(res, live_ads, "success")
     })
 }
 
