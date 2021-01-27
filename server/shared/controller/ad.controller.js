@@ -207,7 +207,13 @@ function getAdsOnDashboard(req, res) {
 
 function getAdsByCatagoryId(req, res) {
     ad.findAll({
-        where: { categoryId: req.body.category_id },
+        where: {
+            categoryId: req.body.category_id,
+            status: 'ACTIVE',
+            end_at: {
+                [Op.gt]: today
+            }
+        },
         include: [{
             model: shop
         }, {

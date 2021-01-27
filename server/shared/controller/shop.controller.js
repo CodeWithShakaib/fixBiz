@@ -414,7 +414,7 @@ function searchFilter(req, res) {
 }
 
 function activateShop(req, res) {
-    shop.find().then((record) => {
+    shop.findOne({ where: { id: req.params.id } }).then((record) => {
         if (record.verification_status == 'PENDING') {
             shop.update({
                 verification_status: 'ACTIVE'
