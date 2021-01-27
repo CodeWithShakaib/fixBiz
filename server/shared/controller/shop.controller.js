@@ -97,8 +97,7 @@ function searchByWord(req, res) {
         where: {
             name: {
                 [Op.like]: '%' + req.body.word + '%'
-            },
-            verification_status: 'ACTIVE'
+            }
         }
 
 
@@ -128,6 +127,7 @@ function searchByWord(req, res) {
 
             shop.findAll({
                 where: {
+                    verification_status: 'ACTIVE',
                     [Op.or]: [{
                         categoryId: {
                             [Op.in]: catagories_ids
@@ -360,8 +360,7 @@ function searchFilter(req, res) {
         where: {
             name: {
                 [Op.like]: `%${req.body.service}%`
-            },
-            verification_status: 'ACTIVE'
+            }
         }
 
     }).then((record) => {
@@ -372,6 +371,7 @@ function searchFilter(req, res) {
 
         shop.findAll({
             where: {
+                verification_status: 'ACTIVE',
                 [Op.or]: [{ categoryId: req.body.category_id }, { cityId: req.body.city_id }, {
                     id: {
                         [Op.in]: ids
