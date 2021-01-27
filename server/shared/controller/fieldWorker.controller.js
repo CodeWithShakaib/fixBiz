@@ -61,10 +61,7 @@ function get(req, res) {
     fieldWorker.count({ where: { id: req.params.id } }).then(count => {
         if (count != 0) {
             fieldWorker.findOne({
-                where: { id: req.params.id },
-                include: [{
-                    model: shop
-                }]
+                where: { id: req.params.id }
             }).then(record => {
                 return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             })
@@ -119,10 +116,7 @@ function update(req, res) {
             }, { where: { id: req.params.id } });
 
             fieldWorker.findOne({
-                where: { id: req.params.id },
-                include: [{
-                    model: shop
-                }]
+                where: { id: req.params.id }
             }).then(record => {
                 return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             })
@@ -137,11 +131,7 @@ function update(req, res) {
 
 function getAll(req, res) {
 
-    fieldWorker.findAll({
-        include: [{
-            model: shop
-        }]
-    }).then((fieldWorkers) => {
+    fieldWorker.findAll().then((fieldWorkers) => {
         return apiRes.apiSuccess(res, fieldWorkers, "success")
     })
 }

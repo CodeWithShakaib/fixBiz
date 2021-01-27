@@ -98,7 +98,7 @@ function searchByWord(req, res) {
             name: {
                 [Op.like]: '%' + req.body.word + '%'
             },
-            [Op.or]: { verification_status: 'ACTIVE', verification_status: 'TRIAL' }
+            verification_status: 'ACTIVE'
         }
 
 
@@ -361,7 +361,7 @@ function searchFilter(req, res) {
             name: {
                 [Op.like]: `%${req.body.service}%`
             },
-            [Op.or]: { verification_status: 'ACTIVE', verification_status: 'TRIAL' }
+            verification_status: 'ACTIVE'
         }
 
     }).then((record) => {
