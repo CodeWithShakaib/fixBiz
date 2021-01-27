@@ -79,8 +79,15 @@ function get(req, res) {
                 }, {
                     model: catagory
                 }]
-            }).then(record => {
-                return apiRes.apiSuccess(res, [record], "success")
+            }).then(ad => {
+                if (ad.end_at > today && ad.status == 'ACTIVE') {
+                    ad.isLive = true
+                } else {
+                    ad.isLive = false
+                }
+                final_ads.push(ad);
+
+                return apiRes.apiSuccess(res, [ad], "success")
             })
         } else {
             return apiRes.apiError(res, "ad is not pressent with this id")
@@ -176,8 +183,17 @@ function getAll(req, res) {
         include: [{
             model: shop
         }, { model: catagory }]
-    }).then((ads) => {
-        return apiRes.apiSuccess(res, ads, "success")
+    }).then((record) => {
+        final_ads = []
+        record.forEach(ad => {
+            if (ad.end_at > today && ad.status == 'ACTIVE') {
+                ad.isLive = true
+            } else {
+                ad.isLive = false
+            }
+            final_ads.push(ad);
+        })
+        return apiRes.apiSuccess(res, final_ads, "success")
     })
 }
 
@@ -219,8 +235,14 @@ function getAdsByCatagoryId(req, res) {
         }, {
             model: catagory
         }]
-    }).then((record) => {
-        return apiRes.apiSuccess(res, record, "success")
+    }).then((ads) => {
+        live_ads = []
+
+        ads.forEach(ad => {
+            ad.isLive = true;
+            live_ads.push(ad);
+        });
+        return apiRes.apiSuccess(res, live_ads, "success")
     })
 }
 
@@ -233,9 +255,16 @@ function getAdsByShopId(req, res) {
             model: catagory
         }]
     }).then((record) => {
-        return apiRes.apiSuccess(res, record, "success")
-    }).catch((err) => {
-        return apiRes.apiError(res, err, "shop id not found")
+        final_ads = []
+        record.forEach(ad => {
+            if (ad.end_at > today && ad.status == 'ACTIVE') {
+                ad.isLive = true
+            } else {
+                ad.isLive = false
+            }
+            final_ads.push(ad);
+        })
+        return apiRes.apiSuccess(res, final_ads, "success")
     })
 }
 
