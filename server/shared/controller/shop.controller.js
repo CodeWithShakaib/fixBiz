@@ -429,6 +429,8 @@ function activateShop(req, res) {
             })
         }
 
+    }).catch(() => {
+        return apiRes.apiSuccess(res, "Id is not pressent")
     })
 
 }

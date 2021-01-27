@@ -10,7 +10,7 @@ router.get('/get', adCrtl.getAll);
 router.post('/getAdsByCatagoryId', adCrtl.getAdsByCatagoryId);
 router.post('/getAdsByShopId', adCrtl.getAdsByShopId);
 router.get('/getAdsOnDashboard', adCrtl.getAdsOnDashboard);
-
+router.put('/:id/adToggle', adCrtl.adToggle)
 
 
 module.exports = router

@@ -268,6 +268,29 @@ function getAdsByShopId(req, res) {
     })
 }
 
+
+function adToggle(req, res) {
+    ad.findOne({ where: { id: req.params.id } }).then((record) => {
+        if (record.status == 'PENDING') {
+            ad.update({
+                status: 'ACTIVE'
+            }, { where: { id: req.params.id } }).then((record) => {
+                return apiRes.apiSuccess(res, "ACTIVE")
+            })
+        } else {
+            ad.update({
+                status: 'PENDING'
+            }, { where: { id: req.params.id } }).then((record) => {
+                return apiRes.apiSuccess(res, "PENDING")
+            })
+        }
+
+    }).catch(() => {
+        return apiRes.apiSuccess(res, "Id is not pressent")
+    })
+
+}
+
 module.exports = {
     create,
     get,
@@ -276,5 +299,6 @@ module.exports = {
     getAll,
     getAdsByCatagoryId,
     getAdsByShopId,
-    getAdsOnDashboard
+    getAdsOnDashboard,
+    adToggle
 }
