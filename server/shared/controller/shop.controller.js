@@ -414,11 +414,23 @@ function searchFilter(req, res) {
 }
 
 function activateShop(req, res) {
-    shop.update({
-        verification_status: 'ACTIVE'
-    }, { where: { id: req.params.id } }).then((record) => {
-        return apiRes.apiSuccess(res)
+    shop.find().then((record) => {
+        if (record.verification_status == 'PENDING') {
+            shop.update({
+                verification_status: 'ACTIVE'
+            }, { where: { id: req.params.id } }).then((record) => {
+                return apiRes.apiSuccess(res, "ACTIVE")
+            })
+        } else {
+            shop.update({
+                verification_status: 'PENDING'
+            }, { where: { id: req.params.id } }).then((record) => {
+                return apiRes.apiSuccess(res, "PENDING")
+            })
+        }
+
     })
+
 }
 
 module.exports = {
