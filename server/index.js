@@ -31,7 +31,7 @@ cron.schedule("59 23 * * *", function() {
     })
 });
 
-cron.schedule("1 * * * * *", () => {
+cron.schedule("1 * * * *", () => {
     console.log("hello");
 })
 
