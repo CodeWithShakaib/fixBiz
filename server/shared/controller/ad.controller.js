@@ -11,8 +11,8 @@ const fieldWorker = require("../models/fieldWorker.model")
 const { response } = require("../../config/express")
 const shop = require("../models/shop.model")
 
-var today = new Date();
-today.setHours(today.getHours() + 5);
+
+// console.log(today)
 
 function create(req, res) {
 
@@ -42,6 +42,7 @@ function create(req, res) {
 
     }
 
+
     const record = ad.build({
         title: params.title,
         type: params.type,
@@ -63,7 +64,10 @@ function create(req, res) {
             include: [
                 { model: shop }, { model: catagory }
             ]
-        }).then((record) => { return apiRes.apiSuccess(res, [record], "Success", ) })
+        }).then((record) => {
+            console.log(typeof record.end_at)
+            return apiRes.apiSuccess(res, [record], "Success", )
+        })
 
     })
 }
@@ -80,7 +84,7 @@ function get(req, res) {
                     model: catagory
                 }]
             }).then(ad => {
-                if (ad.end_at > today && ad.status == 'ACTIVE') {
+                if (ad.start_at < today && ad.end_at > today && ad.status == 'ACTIVE') {
                     ad.isLive = true
                 } else {
                     ad.isLive = false
@@ -178,6 +182,8 @@ function update(req, res) {
 }
 
 function getAll(req, res) {
+    var today = new Date();
+    today = today.setHours(today.getHours() + 6);
 
     ad.findAll({
         include: [{
@@ -186,7 +192,7 @@ function getAll(req, res) {
     }).then((record) => {
         final_ads = []
         record.forEach(ad => {
-            if (ad.end_at > today && ad.status == 'ACTIVE') {
+            if (ad.start_at < today && ad.end_at > today && ad.status == 'ACTIVE') {
                 ad.isLive = true
             } else {
                 ad.isLive = false
@@ -198,12 +204,20 @@ function getAll(req, res) {
 }
 
 function getAdsOnDashboard(req, res) {
+
+    var today = new Date();
+    today = today.setHours(today.getHours() + 6);
+
+
     ad.findAll({
         include: [{
             model: shop
         }, { model: catagory }],
         where: {
             status: 'ACTIVE',
+            start_at: {
+                [Op.lt]: today
+            },
             end_at: {
                 [Op.gt]: today
             }
@@ -222,10 +236,18 @@ function getAdsOnDashboard(req, res) {
 }
 
 function getAdsByCatagoryId(req, res) {
+
+    var today = new Date();
+    today = today.setHours(today.getHours() + 6);
+
+
     ad.findAll({
         where: {
             categoryId: req.body.category_id,
             status: 'ACTIVE',
+            start_at: {
+                [Op.lt]: today
+            },
             end_at: {
                 [Op.gt]: today
             }
@@ -247,6 +269,10 @@ function getAdsByCatagoryId(req, res) {
 }
 
 function getAdsByShopId(req, res) {
+
+    var today = new Date();
+    today = today.setHours(today.getHours() + 6);
+
     ad.findAll({
         where: { shopId: req.body.shop_id },
         include: [{
@@ -257,7 +283,7 @@ function getAdsByShopId(req, res) {
     }).then((record) => {
         final_ads = []
         record.forEach(ad => {
-            if (ad.end_at > today && ad.status == 'ACTIVE') {
+            if (ad.start_at < today && ad.end_at > today && ad.status == 'ACTIVE') {
                 ad.isLive = true
             } else {
                 ad.isLive = false

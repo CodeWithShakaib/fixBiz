@@ -15,9 +15,17 @@ const _ = require('lodash');
 const { isDate } = require("lodash")
 const geolib = require('geolib');
 
+
+
+
+
 function create(req, res) {
 
     params = req.body
+
+    if (params.fieldWorker_id == '0') {
+        params.fieldWorker_id = null
+    }
 
     shop.findAll({
         where: {
@@ -96,10 +104,10 @@ function searchByWord(req, res) {
         // exclude: ['shopId'],
         where: {
             name: {
-                [Op.like]: '%' + req.body.word + '%'
+                [Op.like]: '%' + req.body.word + '%',
+                [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }]
             }
         }
-
 
     }).then((record) => {
         services_ids = []
@@ -154,7 +162,18 @@ function searchByWord(req, res) {
                 }, {
                     model: city
                 }, {
-                    model: ad
+                    model: ad,
+                    where: {
+                        status: 'ACTIVE',
+                        start_at: {
+                            [Op.lt]: today
+                        },
+                        end_at: {
+                            [Op.gt]: today
+                        }
+                    },
+                    required: false,
+
                 }]
             }).then((record1) => {
                 if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
@@ -314,8 +333,12 @@ function getAll(req, res) {
 
 function getByCatagoryId(req, res) {
 
+    var today = new Date();
+    today = today.setHours(today.getHours() + 6);
+
+
     shop.findAll({
-        where: { categoryId: req.body.category_id, verification_status: 'ACTIVE' },
+        where: { categoryId: req.body.category_id, [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }] },
         include: [{
             model: catagory
         }, {
@@ -328,20 +351,36 @@ function getByCatagoryId(req, res) {
         }, {
             model: city
         }, {
-            model: ad
+            model: ad,
+            where: {
+                status: 'ACTIVE',
+                start_at: {
+                    [Op.lt]: today
+                },
+                end_at: {
+                    [Op.gt]: today
+                }
+            },
+            required: false,
+
         }]
     }).then((record) => {
         if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
+
             return apiRes.apiSuccess(res, record, "success")
         } else {
             final_result = []
-            record.forEach(element => {
-                distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
+
+            for (let i = 0; i < record.length; i++) {
+                ads = []
+                distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: record[i].latitude, longitude: record[i].longitude }) / 1000
                 if (distance < 50.0) {
-                    element.distance = distance;
-                    final_result.push(element);
+                    record[i].distance = distance;
+                    final_result.push(record[i]);
                 }
-            });
+
+            }
+
 
             return apiRes.apiSuccess(res, final_result, "success")
         }
@@ -371,8 +410,8 @@ function searchFilter(req, res) {
 
         shop.findAll({
             where: {
-                verification_status: 'ACTIVE',
-                [Op.or]: [{ categoryId: req.body.category_id }, { cityId: req.body.city_id }, {
+                [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }],
+                [Op.or]: [{ categoryId: req.body.category_id }, {
                     id: {
                         [Op.in]: ids
                     }
@@ -390,12 +429,30 @@ function searchFilter(req, res) {
             }, {
                 model: city
             }, {
-                model: ad
+                model: ad,
+                where: {
+                    status: 'ACTIVE',
+                    start_at: {
+                        [Op.lt]: today
+                    },
+                    end_at: {
+                        [Op.gt]: today
+                    }
+                },
+                required: false,
+
             }]
         }).then((record1) => {
 
             if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
-                return apiRes.apiSuccess(res, record1, "success")
+                shop.findAll({
+                    where: { cityId: req.body.city_id },
+                    [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }]
+                }).then((record) => {
+                    return apiRes.apiSuccess(res, record1.concat(record), "success")
+                })
+
+
             } else {
                 final_result = []
                 record1.forEach(element => {
@@ -405,8 +462,14 @@ function searchFilter(req, res) {
                         final_result.push(element);
                     }
                 });
-
-                return apiRes.apiSuccess(res, final_result, "success")
+                shop.findAll({ where: { cityId: req.body.city_id } }).then((record) => {
+                    record.forEach(element => {
+                        distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
+                        element.distance = distance;
+                        final_result.push(element);
+                    })
+                    return apiRes.apiSuccess(res, final_result, "success")
+                })
             }
 
         })
