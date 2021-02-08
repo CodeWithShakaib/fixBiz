@@ -74,6 +74,9 @@ function create(req, res) {
 
 
 function get(req, res) {
+    var today = new Date();
+    today = new Date(today.setHours(today.getHours() + 5));
+
     ad.count({ where: { id: req.params.id } }).then(count => {
         if (count != 0) {
             ad.findOne({
@@ -183,7 +186,8 @@ function update(req, res) {
 
 function getAll(req, res) {
     var today = new Date();
-    today = today.setHours(today.getHours() + 6);
+    today = new Date(today.setHours(today.getHours() + 5));
+
 
     ad.findAll({
         include: [{
@@ -206,7 +210,7 @@ function getAll(req, res) {
 function getAdsOnDashboard(req, res) {
 
     var today = new Date();
-    today = today.setHours(today.getHours() + 6);
+    today = new Date(today.setHours(today.getHours() + 5));
 
 
     ad.findAll({
@@ -271,7 +275,7 @@ function getAdsByCatagoryId(req, res) {
 function getAdsByShopId(req, res) {
 
     var today = new Date();
-    today = today.setHours(today.getHours() + 6);
+    today = new Date(today.setHours(today.getHours() + 5));
 
     ad.findAll({
         where: { shopId: req.body.shop_id },

@@ -99,14 +99,19 @@ function create(req, res) {
 
 function searchByWord(req, res) {
 
+    var today = new Date();
+    today = new Date(today.setHours(today.getHours() + 5));
+
+
     service.findAll({
         attributes: ['shopId'],
         // exclude: ['shopId'],
         where: {
             name: {
-                [Op.like]: '%' + req.body.word + '%',
-                [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }]
-            }
+                [Op.like]: '%' + req.body.word + '%'
+
+            },
+            [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }]
         }
 
     }).then((record) => {
@@ -135,7 +140,7 @@ function searchByWord(req, res) {
 
             shop.findAll({
                 where: {
-                    verification_status: 'ACTIVE',
+                    [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }],
                     [Op.or]: [{
                         categoryId: {
                             [Op.in]: catagories_ids
@@ -334,7 +339,8 @@ function getAll(req, res) {
 function getByCatagoryId(req, res) {
 
     var today = new Date();
-    today = today.setHours(today.getHours() + 6);
+    today = new Date(today.setHours(today.getHours() + 5));
+
 
 
     shop.findAll({
@@ -392,6 +398,9 @@ function getByCatagoryId(req, res) {
 }
 
 function searchFilter(req, res) {
+    var today = new Date();
+    today = new Date(today.setHours(today.getHours() + 5));
+
 
     service.findAll({
         attributes: ['shopId'],

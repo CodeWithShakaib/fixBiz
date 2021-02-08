@@ -3,6 +3,7 @@ const port = process.env.PORT || 3000
 const cron = require("node-cron")
 const shop = require("./shared/models/shop.model")
 const { Op } = require("sequelize")
+const ad = require("./shared/models/ad.model")
 const http = require('http').createServer(app); // http server use for whole application
 
 
@@ -21,7 +22,10 @@ cron.schedule("59 23 * * *", function() {
     var numberOfDaysToAdd = 31;
     someDate = someDate.setDate(someDate.getDate() - numberOfDaysToAdd);
 
-    shop.update({ verification_status: 'EXPIRED' }, {
+    var today = new Date();
+    today = new Date(today.setHours(today.getHours() + 5));
+
+    await shop.update({ verification_status: 'EXPIRED' }, {
         where: {
             verification_status: 'TRIAL',
             createdAt: {
@@ -29,28 +33,21 @@ cron.schedule("59 23 * * *", function() {
             }
         }
     })
-});
 
-cron.schedule("1 * * * *", () => {
-    console.log("hello");
-})
-
-
-
-cron.schedule("59 13 * * *", function() {
-    var someDate = new Date();
-    var numberOfDaysToAdd = 31;
-    someDate = someDate.setDate(someDate.getDate() - numberOfDaysToAdd);
-
-    ad.update({ status: 'EXPIRED' }, {
+    await ad.update({ status: 'EXPIRED', isLive: 'false' }, {
         where: {
-            verification_status: 'TRIAL',
-            createdAt: {
-                [Op.lt]: someDate
+            status: 'ACTIVE',
+            end_at: {
+                [Op.lt]: today
             }
         }
     })
+
+
 });
+
+
+
 
 
 
