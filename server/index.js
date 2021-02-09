@@ -28,11 +28,20 @@ cron.schedule("59 23 * * *", async function() {
     await shop.update({ verification_status: 'EXPIRED' }, {
         where: {
             verification_status: 'TRIAL',
+            transaction_id: null,
             createdAt: {
                 [Op.lt]: someDate
             }
         }
     })
+
+    await shop.update({ verification_status: 'PENDING' }, {
+        where: {
+            verification_status: 'TRIAL',
+            transaction_id: !null
+        }
+    })
+
 
     await ad.update({ status: 'EXPIRED', isLive: false }, {
         where: {
