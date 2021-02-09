@@ -110,8 +110,7 @@ function searchByWord(req, res) {
             name: {
                 [Op.like]: '%' + req.body.word + '%'
 
-            },
-            [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }]
+            }
         }
 
     }).then((record) => {
