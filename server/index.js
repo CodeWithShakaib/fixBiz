@@ -34,7 +34,7 @@ cron.schedule("59 23 * * *", function() {
         }
     })
 
-    await ad.update({ status: 'EXPIRED', isLive: 'false' }, {
+    await ad.update({ status: 'EXPIRED', isLive: false }, {
         where: {
             status: 'ACTIVE',
             end_at: {
