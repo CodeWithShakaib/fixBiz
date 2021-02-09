@@ -17,7 +17,7 @@ var a = 0;
 // CRON jobs
 
 
-cron.schedule("59 23 * * *", function() {
+cron.schedule("59 23 * * *", async function() {
     var someDate = new Date();
     var numberOfDaysToAdd = 31;
     someDate = someDate.setDate(someDate.getDate() - numberOfDaysToAdd);
@@ -45,6 +45,37 @@ cron.schedule("59 23 * * *", function() {
 
 
 });
+
+// cron.schedule('* * * * *', async function() {
+//     var someDate = new Date();
+//     var numberOfDaysToAdd = 31;
+//     someDate = someDate.setDate(someDate.getDate() - numberOfDaysToAdd);
+
+//     var today = new Date();
+//     today = new Date(today.setHours(today.getHours() + 5));
+
+
+//     await shop.update({ verification_status: 'EXPIRED' }, {
+//         where: {
+//             verification_status: 'TRIAL',
+//             createdAt: {
+//                 [Op.lt]: someDate
+//             }
+//         }
+//     })
+
+//     await ad.update({ status: 'EXPIRED', isLive: false }, {
+//         where: {
+//             status: 'ACTIVE',
+//             end_at: {
+//                 [Op.lt]: today
+//             }
+//         }
+//     })
+
+
+// });
+
 
 
 
