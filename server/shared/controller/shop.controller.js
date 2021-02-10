@@ -281,7 +281,7 @@ function update(req, res) {
                 owner_name: params.owner_name,
                 email: params.email,
                 phone_number: params.phone_number,
-                city: params.city_id
+                cityId: params.city_id
 
             }, { where: { id: req.params.id } });
 
@@ -399,6 +399,11 @@ function getByCatagoryId(req, res) {
 function searchFilter(req, res) {
     var today = new Date();
     today = new Date(today.setHours(today.getHours() + 5));
+
+    if (!req.body.category_id) req.body.category_id = 0
+    if (!req.body.city_id) req.body.city_id = 0
+    if (!req.body.longitude) req.body.longitude = 0
+    if (!req.body.latitude) req.body.latitude = 0
 
 
     service.findAll({
