@@ -600,23 +600,23 @@ function getByCityId(req, res) {
 
         }]
     }).then((record) => {
-        if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
+        // if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
 
-            return apiRes.apiSuccess(res, record, "success")
-        } else {
-            final_result = []
+        //     return apiRes.apiSuccess(res, record, "success")
+        // } else {
+        //     final_result = []
 
-            for (let i = 0; i < record.length; i++) {
-                ads = []
-                distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: record[i].latitude, longitude: record[i].longitude }) / 1000
-                record[i].distance = distance;
-                final_result.push(record[i]);
+        //     for (let i = 0; i < record.length; i++) {
+        //         ads = []
+        //         distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: record[i].latitude, longitude: record[i].longitude }) / 1000
+        //         record[i].distance = distance;
+        //         final_result.push(record[i]);
 
-            }
+        //     }
 
 
-            return apiRes.apiSuccess(res, final_result, "success")
-        }
+        return apiRes.apiSuccess(res, record, "success")
+            // }
 
 
 
