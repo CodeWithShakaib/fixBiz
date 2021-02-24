@@ -13,7 +13,7 @@ let feedback = sequelize.define('feedback', {
 feedback.belongsTo(shop, { foregin_key: { allowNull: true } });
 feedback.belongsTo(user, { foregin_key: { allowNull: true } });
 
-feedback.sync({ force: true }).then(() => {
+feedback.sync().then(() => {
     console.log('New table created');
 })
 

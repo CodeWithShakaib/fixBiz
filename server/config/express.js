@@ -12,9 +12,11 @@ const galleryRoute = require("../shared/routes/gallery.router")
 const cityRoute = require("../shared/routes/city.router")
 const feedbackRoute = require("../shared/routes/feedback.router")
 const authRoute = require("../authentication/auth.router")
+const subCategoryRoute = require("../shared/routes/subCategory.router");
 
 
 const cors = require('cors');
+const subCategory = require("../shared/models/subCategory.model");
 
 const app = express()
 
@@ -60,5 +62,8 @@ app.use("/api/feedback", feedbackRoute)
 
 // authentication route
 app.use("/api/auth", authRoute)
+
+// subCategory route
+app.use("/api/subCategory", subCategoryRoute)
 
 module.exports = app

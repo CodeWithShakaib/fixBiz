@@ -20,7 +20,6 @@ function create(req, res) {
     value = user.findAll({
         where: {
             [Op.or]: [
-                { email: params.email },
                 { phone_number: params.phone_number }
             ]
         }
@@ -28,7 +27,7 @@ function create(req, res) {
         console.log(record.length)
         if (record.length > 0) {
             apiRes.apiError(
-                res, "Email or phone number already exists.", null)
+                res, "Phone number already exists.", null)
         } else {
 
             if (req.files && req.files.image) {
@@ -46,7 +45,7 @@ function create(req, res) {
             const record = user.build({
                 f_name: params.f_name,
                 l_name: params.l_name,
-                email: params.email,
+                email: params.email || null,
                 password: params.password,
                 img_url: img_url,
                 type: params.type,
