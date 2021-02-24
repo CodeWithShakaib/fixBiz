@@ -31,7 +31,6 @@ function create(req, res) {
     shop.findAll({
         where: {
             [Op.or]: [
-                { email: params.email },
                 { phone_number: params.phone_number }
             ]
         }
@@ -69,7 +68,7 @@ function create(req, res) {
                 categoryId: params.category_id,
                 fieldWorkerId: params.fieldWorker_id,
                 owner_name: params.owner_name,
-                email: params.email,
+                email: params.email || null,
                 password: params.password,
                 phone_number: params.phone_number,
                 cityId: params.city_id
@@ -87,7 +86,9 @@ function create(req, res) {
                     }
 
 
-                }).then((record) => { return apiRes.apiSuccess(res, [record], "Success", ) })
+                }).then((record) => { return apiRes.apiSuccess(res, [record], "Success", ) }).catch(err => {
+                    return apiRes.apiError(res, err.message)
+                });
 
             }).catch((err) => {
                 return apiRes.apiError(res, err.message)
@@ -95,7 +96,9 @@ function create(req, res) {
             })
         }
 
-    })
+    }).catch(err => {
+        return apiRes.apiError(res, err.message)
+    });
 }
 
 function searchByWord(req, res) {
@@ -196,10 +199,16 @@ function searchByWord(req, res) {
                     return apiRes.apiSuccess(res, final_result, "success")
                 }
 
-            })
+            }).catch(err => {
+                return apiRes.apiError(res, err.message)
+            });
 
-        })
-    })
+        }).catch(err => {
+            return apiRes.apiError(res, err.message)
+        });
+    }).catch(err => {
+        return apiRes.apiError(res, err.message)
+    });
 }
 
 function get(req, res) {
@@ -223,7 +232,9 @@ function get(req, res) {
                 }, { model: ad }]
             }).then(record => {
                 return apiRes.apiSuccess(res, [record], "success")
-            })
+            }).catch(err => {
+                return apiRes.apiError(res, err.message)
+            });
         } else {
             return apiRes.apiError(res, "Shop is not pressent with this id")
         }
@@ -244,7 +255,9 @@ function del(req, res) {
         } else {
             return apiRes.apiError(res, "Shop ID is not pressent");
         }
-    });
+    }).catch(err => {
+        return apiRes.apiError(res, err.message)
+    });;
 
 }
 
@@ -302,7 +315,9 @@ function update(req, res) {
                 }, { model: ad }]
             }).then(record => {
                 return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
-            })
+            }).catch(err => {
+                return apiRes.apiError(res, err.message)
+            });
 
         } else {
             return apiRes.apiError(res, "Shop is not pressent with this id")
@@ -331,7 +346,9 @@ function getAll(req, res) {
         }]
     }).then((shops) => {
         return apiRes.apiSuccess(res, shops, "success")
-    })
+    }).catch(err => {
+        return apiRes.apiError(res, err.message)
+    });
 }
 
 
@@ -393,7 +410,9 @@ function getByCatagoryId(req, res) {
 
 
 
-    })
+    }).catch(err => {
+        return apiRes.apiError(res, err.message)
+    });
 
 }
 
@@ -489,7 +508,9 @@ function searchFilter(req, res) {
                     [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }]
                 }).then((record) => {
                     return apiRes.apiSuccess(res, utils.getUnique(record1.concat(record)), "success")
-                })
+                }).catch(err => {
+                    return apiRes.apiError(res, err.message)
+                });
 
 
             } else {
@@ -536,11 +557,17 @@ function searchFilter(req, res) {
                         final_result.push(element);
                     })
                     return apiRes.apiSuccess(res, utils.getUnique(final_result), "success")
-                })
+                }).catch(err => {
+                    return apiRes.apiError(res, err.message)
+                });
             }
 
-        })
-    })
+        }).catch(err => {
+            return apiRes.apiError(res, err.message)
+        });
+    }).catch(err => {
+        return apiRes.apiError(res, err.message)
+    });
 }
 
 function activateShop(req, res) {
@@ -550,13 +577,17 @@ function activateShop(req, res) {
                 verification_status: 'ACTIVE'
             }, { where: { id: req.params.id } }).then((record) => {
                 return apiRes.apiSuccess(res, "ACTIVE")
-            })
+            }).catch(err => {
+                return apiRes.apiError(res, err.message)
+            });
         } else {
             shop.update({
                 verification_status: 'PENDING'
             }, { where: { id: req.params.id } }).then((record) => {
                 return apiRes.apiSuccess(res, "PENDING")
-            })
+            }).catch(err => {
+                return apiRes.apiError(res, err.message)
+            });
         }
 
     }).catch(() => {
@@ -620,7 +651,9 @@ function getByCityId(req, res) {
 
 
 
-    })
+    }).catch(err => {
+        return apiRes.apiError(res, err.message)
+    });
 
 }
 

@@ -4,6 +4,7 @@ const cron = require("node-cron")
 const shop = require("./shared/models/shop.model")
 const { Op } = require("sequelize")
 const ad = require("./shared/models/ad.model")
+const subCategory = require("./shared/models/subCategory.model")
 const http = require('http').createServer(app); // http server use for whole application
 
 

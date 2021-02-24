@@ -16,21 +16,23 @@ function signIn(req, res) {
     params = req.body
 
     if (params.type == 'USER') {
-        user.count({ where: { email: params.email, password: params.password } }).then(count => {
+        user.count({ where: { phone_number: params.phone_number, password: params.password } }).then(count => {
             if (count != 0) {
-                user.findOne({ where: { email: params.email, password: params.password } }).then(record => {
+                user.findOne({ where: { phone_number: params.phone_number, password: params.password } }).then(record => {
                     return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
                 })
             } else {
                 return apiRes.apiError(res, "Invalid email or password")
             }
-        });
+        }).catch(err => {
+            return apiRes.apiError(res, err.message)
+        });;
 
     } else if (params.type == 'SHOP') {
-        shop.count({ where: { email: params.email, password: params.password } }).then(count => {
+        shop.count({ where: { phone_number: params.phone_number, password: params.password } }).then(count => {
             if (count != 0) {
                 shop.findOne({
-                    where: { email: params.email, password: params.password },
+                    where: { phone_number: params.phone_number, password: params.password },
                     include: [{
                         model: catagory
                     }, {
@@ -51,6 +53,8 @@ function signIn(req, res) {
             } else {
                 return apiRes.apiError(res, "Invalid email or password")
             }
+        }).catch(err => {
+            return apiRes.apiError(res, err.message)
         });
 
     } else if (params.type == 'ADMIN') {

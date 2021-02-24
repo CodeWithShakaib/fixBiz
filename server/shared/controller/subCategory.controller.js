@@ -2,19 +2,13 @@ const apiRes = require("../../config/api.response")
 const sequelize = require("../../config/db.connection")
 const { Op } = require("sequelize")
 const category = require("../models/category.model")
-const shop = require("../models/shop.model")
-const ad = require("../models/ad.model")
-const review = require("../models/review.model")
-const service = require("../models/service.model")
-const gallery = require("../models/gallery.model")
-const { response } = require("../../config/express")
 const subCategory = require("../models/subCategory.model")
 
 function create(req, res) {
 
     params = req.body
 
-    value = category.findAll({
+    value = subCategory.findAll({
         where: {
             name: params.name
         }
@@ -27,7 +21,7 @@ function create(req, res) {
 
             if (req.files && req.files.icon) {
                 var image = req.files.icon
-                var img_url = "/category_icon/" + "_" + params.name + "_" + image.name;
+                var img_url = "/subCategory_icon/" + "_" + params.name + "_" + image.name;
 
                 image.mv(process.cwd() + '/server/public/' + img_url, function(err) {
                     if (err)
@@ -37,10 +31,11 @@ function create(req, res) {
 
             }
 
-            const record = category.build({
+            const record = subCategory.build({
                 name: params.name,
                 icon: img_url,
-                description: params.description
+                description: params.description,
+                categoryId: params.categoryId
             });
             return record.save().then((record) => {
                 apiRes.apiSuccess(res, [record], "Success", )
@@ -51,9 +46,9 @@ function create(req, res) {
 }
 
 function get(req, res) {
-    category.count({ where: { id: req.params.id } }).then(count => {
+    subCategory.count({ where: { id: req.params.id } }).then(count => {
         if (count != 0) {
-            category.findOne({ where: { id: req.params.id } }).then(record => {
+            subCategory.findOne({ where: { id: req.params.id }, include: [{ model: category }] }).then(record => {
                 return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             })
         } else {
@@ -65,7 +60,7 @@ function get(req, res) {
 }
 
 function del(req, res) {
-    category.destroy({
+    subCategory.destroy({
         where: {
             id: req.params.id
         }
@@ -82,11 +77,11 @@ function del(req, res) {
 
 function update(req, res) {
     params = req.body
-    category.count({ where: { id: req.params.id } }).then(count => {
+    subCategory.count({ where: { id: req.params.id } }).then(count => {
         if (count != 0) {
             if (req.files && req.files.icon) {
                 var image = req.files.icon
-                var img_url = "/category_icon/" + "_" + params.name + "_" + image.name;
+                var img_url = "/subCategory_icon/" + "_" + params.name + "_" + image.name;
 
                 image.mv(process.cwd() + '/server/public/' + img_url, function(err) {
                     if (err)
@@ -96,13 +91,14 @@ function update(req, res) {
 
             }
 
-            const record = category.update({
+            const record = subCategory.update({
                 name: params.name,
                 icon: img_url,
-                description: params.description
+                description: params.description,
+                categoryId: params.categoryId
             }, { where: { id: req.params.id } });
 
-            category.findOne({ where: { id: req.params.id } }).then(record => {
+            subCategory.findOne({ where: { id: req.params.id } }).then(record => {
                 return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             })
 
@@ -116,7 +112,13 @@ function update(req, res) {
 
 function getAll(req, res) {
 
-    category.findAll().then((categories) => {
+    subCategory.findAll({ include: [{ model: category }] }).then((categories) => {
+        return apiRes.apiSuccess(res, categories, "success")
+    })
+}
+
+function getByCatagoryId(req, res) {
+    subCategory.findAll({ where: { categoryId: req.query.id } }).then((categories) => {
         return apiRes.apiSuccess(res, categories, "success")
     })
 }
@@ -126,5 +128,6 @@ module.exports = {
     get,
     del,
     update,
-    getAll
+    getAll,
+    getByCatagoryId
 }
