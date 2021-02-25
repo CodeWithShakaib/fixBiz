@@ -9,10 +9,9 @@ const service = require("../models/service.model")
 const gallery = require("../models/gallery.model")
 const fieldWorker = require("../models/fieldWorker.model")
 const { response } = require("../../config/express")
-const shop = require("../models/shop.model")
+const shop = require("../models/shop.model");
+const subCategory = require("../models/subCategory.model");
 
-
-// console.log(today)
 
 function create(req, res) {
 
@@ -57,23 +56,29 @@ function create(req, res) {
         transaction_method: params.transaction_method,
         status: params.status,
         shopId: params.shop_id,
-        categoryId: params.category_id
+        categoryId: params.category_id,
+        subCategoryId: params.subCategoryId
     });
     record.save().then((record) => {
         ad.findByPk(record.id, {
             include: [
-                { model: shop }, { model: catagory }
+                { model: shop }, { model: catagory }, { model: subCategory }
             ]
         }).then((record) => {
             console.log(typeof record.end_at)
             return apiRes.apiSuccess(res, [record], "Success", )
-        })
+        }).catch(err => {
+            return apiRes.apiError(res, err.message)
+        });
 
-    })
+    }).catch(err => {
+        return apiRes.apiError(res, err.message)
+    });
 }
 
 
 function get(req, res) {
+    let final_ads = []
     var today = new Date();
     today = new Date(today.setHours(today.getHours() + 5));
 
@@ -85,7 +90,7 @@ function get(req, res) {
                     model: shop
                 }, {
                     model: catagory
-                }]
+                }, { model: subCategory }]
             }).then(ad => {
                 if (ad.start_at < today && ad.end_at > today && ad.status == 'ACTIVE') {
                     ad.isLive = true
@@ -95,12 +100,16 @@ function get(req, res) {
                 final_ads.push(ad);
 
                 return apiRes.apiSuccess(res, [ad], "success")
-            })
+            }).catch(err => {
+                return apiRes.apiError(res, err.message)
+            });
         } else {
             return apiRes.apiError(res, "ad is not pressent with this id")
         }
 
-    })
+    }).catch(err => {
+        return apiRes.apiError(res, err.message)
+    });
 
 }
 
@@ -116,6 +125,8 @@ function del(req, res) {
         } else {
             return apiRes.apiError(res, "Ad ID is not pressent");
         }
+    }).catch(err => {
+        return apiRes.apiError(res, err.message)
     });
 
 }
@@ -162,7 +173,8 @@ function update(req, res) {
                 transaction_method: params.transaction_method,
                 status: params.status,
                 shopId: params.shop_id,
-                categoryId: params.category_id
+                categoryId: params.category_id,
+                subCategoryId: params.subCategoryId
             }, { where: { id: req.params.id } });
 
             ad.findOne({
@@ -171,10 +183,12 @@ function update(req, res) {
                     model: shop
                 }, {
                     model: catagory
-                }]
+                }, { model: subCategory }]
             }).then(record => {
                 return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
-            })
+            }).catch(err => {
+                return apiRes.apiError(res, err.message)
+            });
 
         } else {
             return apiRes.apiError(res, "Ad is not pressent with this id")
@@ -192,7 +206,7 @@ function getAll(req, res) {
     ad.findAll({
         include: [{
             model: shop
-        }, { model: catagory }]
+        }, { model: catagory }, { model: subCategory }]
     }).then((record) => {
         final_ads = []
         record.forEach(ad => {
@@ -204,7 +218,9 @@ function getAll(req, res) {
             final_ads.push(ad);
         })
         return apiRes.apiSuccess(res, final_ads, "success")
-    })
+    }).catch(err => {
+        return apiRes.apiError(res, err.message)
+    });
 }
 
 function getAdsOnDashboard(req, res) {
@@ -216,7 +232,7 @@ function getAdsOnDashboard(req, res) {
     ad.findAll({
         include: [{
             model: shop
-        }, { model: catagory }],
+        }, { model: catagory }, { model: subCategory }],
         where: {
             status: 'ACTIVE',
             start_at: {
@@ -236,7 +252,9 @@ function getAdsOnDashboard(req, res) {
         });
 
         return apiRes.apiSuccess(res, live_ads, "success")
-    })
+    }).catch(err => {
+        return apiRes.apiError(res, err.message)
+    });
 }
 
 function getAdsByCatagoryId(req, res) {
@@ -260,7 +278,7 @@ function getAdsByCatagoryId(req, res) {
             model: shop
         }, {
             model: catagory
-        }]
+        }, { model: subCategory }]
     }).then((ads) => {
         live_ads = []
 
@@ -269,7 +287,9 @@ function getAdsByCatagoryId(req, res) {
             live_ads.push(ad);
         });
         return apiRes.apiSuccess(res, live_ads, "success")
-    })
+    }).catch(err => {
+        return apiRes.apiError(res, err.message)
+    });
 }
 
 function getAdsByShopId(req, res) {
@@ -283,7 +303,7 @@ function getAdsByShopId(req, res) {
             model: shop
         }, {
             model: catagory
-        }]
+        }, { model: subCategory }]
     }).then((record) => {
         final_ads = []
         record.forEach(ad => {
@@ -295,7 +315,9 @@ function getAdsByShopId(req, res) {
             final_ads.push(ad);
         })
         return apiRes.apiSuccess(res, final_ads, "success")
-    })
+    }).catch(err => {
+        return apiRes.apiError(res, err.message)
+    });
 }
 
 
@@ -306,13 +328,17 @@ function adToggle(req, res) {
                 status: 'ACTIVE'
             }, { where: { id: req.params.id } }).then((record) => {
                 return apiRes.apiSuccess(res, "ACTIVE")
-            })
+            }).catch(err => {
+                return apiRes.apiError(res, err.message)
+            });
         } else {
             ad.update({
                 status: 'PENDING'
             }, { where: { id: req.params.id } }).then((record) => {
                 return apiRes.apiSuccess(res, "PENDING")
-            })
+            }).catch(err => {
+                return apiRes.apiError(res, err.message)
+            });
         }
 
     }).catch(() => {

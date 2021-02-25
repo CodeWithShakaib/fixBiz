@@ -15,6 +15,7 @@ const city = require("../models/city.model")
 const _ = require('lodash');
 const { isDate } = require("lodash")
 const geolib = require('geolib');
+const subCategory = require("../models/subCategory.model");
 
 
 
@@ -71,7 +72,8 @@ function create(req, res) {
                 email: params.email || null,
                 password: params.password,
                 phone_number: params.phone_number,
-                cityId: params.city_id
+                cityId: params.city_id,
+                subCategoryId: params.subCategoryId
             });
             record.save().then((record) => {
                 shop.findOne({
@@ -79,6 +81,8 @@ function create(req, res) {
                         model: catagory
                     }, {
                         model: fieldWorker
+                    }, {
+                        model: subCategory
                     }],
 
                     where: {
@@ -182,6 +186,8 @@ function searchByWord(req, res) {
                     },
                     required: false,
 
+                }, {
+                    model: subCategory
                 }]
             }).then((record1) => {
                 if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
@@ -229,7 +235,9 @@ function get(req, res) {
                     model: gallery
                 }, {
                     model: city
-                }, { model: ad }]
+                }, { model: ad }, {
+                    model: subCategory
+                }]
             }).then(record => {
                 return apiRes.apiSuccess(res, [record], "success")
             }).catch(err => {
@@ -295,7 +303,8 @@ function update(req, res) {
                 owner_name: params.owner_name,
                 email: params.email,
                 phone_number: params.phone_number,
-                cityId: params.city_id
+                cityId: params.city_id,
+                subCategoryId: params.subCategoryId
 
             }, { where: { id: req.params.id } });
 
@@ -312,7 +321,9 @@ function update(req, res) {
                     model: service
                 }, {
                     model: city
-                }, { model: ad }]
+                }, { model: ad }, {
+                    model: subCategory
+                }]
             }).then(record => {
                 return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             }).catch(err => {
@@ -343,6 +354,8 @@ function getAll(req, res) {
             model: city
         }, {
             model: ad
+        }, {
+            model: subCategory
         }]
     }).then((shops) => {
         return apiRes.apiSuccess(res, shops, "success")
@@ -386,6 +399,8 @@ function getByCatagoryId(req, res) {
             },
             required: false,
 
+        }, {
+            model: subCategory
         }]
     }).then((record) => {
         if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
@@ -474,7 +489,7 @@ function searchFilter(req, res) {
                 },
                 required: false,
 
-            }]
+            }, { model: subCategory }]
         }).then((record1) => {
 
             if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
@@ -504,6 +519,8 @@ function searchFilter(req, res) {
                         },
                         required: false,
 
+                    }, {
+                        model: subCategory
                     }],
                     [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }]
                 }).then((record) => {
@@ -548,6 +565,8 @@ function searchFilter(req, res) {
                         },
                         required: false,
 
+                    }, {
+                        model: subCategory
                     }],
                     [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }]
                 }).then((record) => {
@@ -629,6 +648,8 @@ function getByCityId(req, res) {
             },
             required: false,
 
+        }, {
+            model: subCategory
         }]
     }).then((record) => {
         // if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {

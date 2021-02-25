@@ -8,6 +8,7 @@ const service = require('./service.model');
 const gallery = require('./gallery.model');
 const city = require('./city.model');
 const ad = require('./ad.model');
+const subCategory = require('./subCategory.model');
 
 
 let shop = sequelize.define('shop', {
@@ -36,6 +37,7 @@ shop.hasMany(ad);
 shop.belongsTo(category);
 shop.belongsTo(city);
 shop.belongsTo(fieldWorker, { foregin_key: { allowNull: true } });
+shop.belongsTo(subCategory)
 
 review.belongsTo(shop)
 service.belongsTo(shop)

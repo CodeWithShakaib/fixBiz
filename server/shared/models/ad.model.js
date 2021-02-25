@@ -2,7 +2,7 @@ const sequelize = require('../../config/db.connection');
 const datatype = require('sequelize');
 const shop = require('./shop.model');
 const category = require('./category.model')
-
+const subCategory = require('./subCategory.model')
 let ad = sequelize.define('ad', {
     title: datatype.STRING,
     type: datatype.STRING,
@@ -23,7 +23,7 @@ let ad = sequelize.define('ad', {
     }
 });
 
-
+ad.belongsTo(subCategory)
 ad.belongsTo(category);
 
 
