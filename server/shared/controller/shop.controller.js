@@ -391,10 +391,10 @@ function getBySubCatagoryId(req, res) {
             where: {
                 status: 'ACTIVE',
                 start_at: {
-                    [Op.lt]: today
+                    [Op.lt]: new Date(today)
                 },
                 end_at: {
-                    [Op.gt]: today
+                    [Op.gt]: new Date(today)
                 }
             },
             required: false,
@@ -481,10 +481,10 @@ function searchFilter(req, res) {
                 where: {
                     status: 'ACTIVE',
                     start_at: {
-                        [Op.lt]: today
+                        [Op.lt]: new Date(today)
                     },
                     end_at: {
-                        [Op.gt]: today
+                        [Op.gt]: new Date(today)
                     }
                 },
                 required: false,
@@ -511,10 +511,10 @@ function searchFilter(req, res) {
                         where: {
                             status: 'ACTIVE',
                             start_at: {
-                                [Op.lt]: today
+                                [Op.lt]: new Date(today)
                             },
                             end_at: {
-                                [Op.gt]: today
+                                [Op.gt]: new Date(today)
                             }
                         },
                         required: false,
@@ -557,10 +557,10 @@ function searchFilter(req, res) {
                         where: {
                             status: 'ACTIVE',
                             start_at: {
-                                [Op.lt]: today
+                                [Op.lt]: new Date(today)
                             },
                             end_at: {
-                                [Op.gt]: today
+                                [Op.gt]: new Date(today)
                             }
                         },
                         required: false,
@@ -640,10 +640,10 @@ function getByCityId(req, res) {
             where: {
                 status: 'ACTIVE',
                 start_at: {
-                    [Op.lt]: today
+                    [Op.lt]: new Date(today)
                 },
                 end_at: {
-                    [Op.gt]: today
+                    [Op.gt]: new Date(today)
                 }
             },
             required: false,

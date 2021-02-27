@@ -31,7 +31,7 @@ cron.schedule("59 23 * * *", async function() {
             verification_status: 'TRIAL',
             transaction_id: null,
             createdAt: {
-                [Op.lt]: someDate
+                [Op.lt]: new Date(someDate)
             }
         }
     })
@@ -48,7 +48,7 @@ cron.schedule("59 23 * * *", async function() {
         where: {
             status: 'ACTIVE',
             end_at: {
-                [Op.lt]: today
+                [Op.lt]: new Date(today)
             }
         }
     })

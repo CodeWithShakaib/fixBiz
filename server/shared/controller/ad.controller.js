@@ -92,7 +92,7 @@ function get(req, res) {
                     model: catagory
                 }, { model: subCategory }]
             }).then(ad => {
-                if (ad.start_at < today && ad.end_at > today && ad.status == 'ACTIVE') {
+                if (ad.start_at < new Date(today) && ad.end_at > new Date(today) && ad.status == 'ACTIVE') {
                     ad.isLive = true
                 } else {
                     ad.isLive = false
@@ -210,7 +210,7 @@ function getAll(req, res) {
     }).then((record) => {
         final_ads = []
         record.forEach(ad => {
-            if (ad.start_at < today && ad.end_at > today && ad.status == 'ACTIVE') {
+            if (ad.start_at < new Date(today) && ad.end_at > new Date(today) && ad.status == 'ACTIVE') {
                 ad.isLive = true
             } else {
                 ad.isLive = false
@@ -236,10 +236,10 @@ function getAdsOnDashboard(req, res) {
         where: {
             status: 'ACTIVE',
             start_at: {
-                [Op.lt]: today
+                [Op.lt]: new Date(today)
             },
             end_at: {
-                [Op.gt]: today
+                [Op.gt]: new Date(today)
             }
         }
 
@@ -260,7 +260,7 @@ function getAdsOnDashboard(req, res) {
 function getAdsBySubCatagoryId(req, res) {
 
     var today = new Date();
-    today = today.setHours(today.getHours() + 6);
+    today = today.setHours(today.getHours() + 5);
 
 
     ad.findAll({
@@ -268,10 +268,10 @@ function getAdsBySubCatagoryId(req, res) {
             subCategoryId: req.body.subCategoryId,
             status: 'ACTIVE',
             start_at: {
-                [Op.lt]: today
+                [Op.lt]: new Date(today)
             },
             end_at: {
-                [Op.gt]: today
+                [Op.gt]: new Date(today)
             }
         },
         include: [{
@@ -286,7 +286,7 @@ function getAdsBySubCatagoryId(req, res) {
             ad.isLive = true;
             live_ads.push(ad);
         });
-        return apiRes.apiSuccess(res, live_ads, "success")
+        return apiRes.apiSuccess(res, ads, "success")
     }).catch(err => {
         return apiRes.apiError(res, err.message)
     });
@@ -307,7 +307,7 @@ function getAdsByShopId(req, res) {
     }).then((record) => {
         final_ads = []
         record.forEach(ad => {
-            if (ad.start_at < today && ad.end_at > today && ad.status == 'ACTIVE') {
+            if (ad.start_at < new Date(today) && ad.end_at > new Date(today) && ad.status == 'ACTIVE') {
                 ad.isLive = true
             } else {
                 ad.isLive = false
