@@ -366,7 +366,7 @@ function getAll(req, res) {
 
 
 
-function getByCatagoryId(req, res) {
+function getBySubCatagoryId(req, res) {
 
     var today = new Date();
     today = new Date(today.setHours(today.getHours() + 5));
@@ -374,7 +374,7 @@ function getByCatagoryId(req, res) {
 
 
     shop.findAll({
-        where: { categoryId: req.body.category_id, [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }] },
+        where: { subCategoryId: req.body.subCategoryId, [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }] },
         include: [{
             model: catagory
         }, {
@@ -435,7 +435,7 @@ function searchFilter(req, res) {
     var today = new Date();
     today = new Date(today.setHours(today.getHours() + 5));
 
-    if (!req.body.category_id) req.body.category_id = 0
+    if (!req.body.subCategoryId) req.body.subCategoryId = 0
     if (!req.body.city_id) req.body.city_id = 0
     if (!req.body.longitude) req.body.longitude = 0.0
     if (!req.body.latitude) req.body.latitude = 0.0
@@ -459,7 +459,7 @@ function searchFilter(req, res) {
         shop.findAll({
             where: {
                 [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }],
-                [Op.or]: [{ categoryId: req.body.category_id }, {
+                [Op.or]: [{ subCategoryId: req.body.subCategoryId }, {
                     id: {
                         [Op.in]: ids
                     }
@@ -684,7 +684,7 @@ module.exports = {
     del,
     update,
     getAll,
-    getByCatagoryId,
+    getBySubCatagoryId,
     searchFilter,
     searchByWord,
     activateShop,

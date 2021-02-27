@@ -257,7 +257,7 @@ function getAdsOnDashboard(req, res) {
     });
 }
 
-function getAdsByCatagoryId(req, res) {
+function getAdsBySubCatagoryId(req, res) {
 
     var today = new Date();
     today = today.setHours(today.getHours() + 6);
@@ -265,7 +265,7 @@ function getAdsByCatagoryId(req, res) {
 
     ad.findAll({
         where: {
-            categoryId: req.body.category_id,
+            subCategoryId: req.body.subCategoryId,
             status: 'ACTIVE',
             start_at: {
                 [Op.lt]: today
@@ -353,7 +353,7 @@ module.exports = {
     del,
     update,
     getAll,
-    getAdsByCatagoryId,
+    getAdsBySubCatagoryId,
     getAdsByShopId,
     getAdsOnDashboard,
     adToggle
