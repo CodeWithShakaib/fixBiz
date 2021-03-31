@@ -37,7 +37,7 @@ shop.hasMany(ad);
 shop.belongsTo(category);
 shop.belongsTo(city);
 shop.belongsTo(fieldWorker, { foregin_key: { allowNull: true } });
-shop.belongsTo(subCategory)
+
 
 review.belongsTo(shop)
 service.belongsTo(shop)

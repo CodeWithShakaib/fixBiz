@@ -11,10 +11,11 @@ const fieldWorker = require("../models/fieldWorker.model")
 const { response } = require("../../config/express")
 const shop = require("../models/shop.model");
 const subCategory = require("../models/subCategory.model");
+const adSubCategory = require("../models/adSubCategory.model")
 
 
 function create(req, res) {
-
+    let subCategoryIds = [];
     params = req.body
 
     if (req.files && req.files.image) {
@@ -28,6 +29,10 @@ function create(req, res) {
         });
 
     }
+
+    JSON.parse(params.subCategoryIds).forEach(element => {
+        subCategoryIds.push({ subCategoryId: element })
+    })
 
     if (req.files && req.files.video) {
         var video = req.files.video
@@ -57,12 +62,18 @@ function create(req, res) {
         status: params.status,
         shopId: params.shop_id,
         categoryId: params.category_id,
-        subCategoryId: params.subCategoryId
+        adSubCategories: subCategoryIds
+    }, {
+        include: [adSubCategory]
     });
     record.save().then((record) => {
         ad.findByPk(record.id, {
             include: [
-                { model: shop }, { model: catagory }, { model: subCategory }
+                { model: shop }, { model: catagory }, {
+                    model: adSubCategory,
+                    attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'adId'] },
+                    include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
+                }
             ]
         }).then((record) => {
             console.log(typeof record.end_at)
@@ -90,7 +101,11 @@ function get(req, res) {
                     model: shop
                 }, {
                     model: catagory
-                }, { model: subCategory }]
+                }, {
+                    model: adSubCategory,
+                    attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'adId'] },
+                    include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
+                }]
             }).then(ad => {
                 if (ad.start_at < new Date(today) && ad.end_at > new Date(today) && ad.status == 'ACTIVE') {
                     ad.isLive = true
@@ -133,6 +148,7 @@ function del(req, res) {
 
 function update(req, res) {
     params = req.body
+    let subCategoryIds = [];
     ad.count({ where: { id: req.params.id } }).then(count => {
         if (count != 0) {
             if (req.files && req.files.image) {
@@ -159,6 +175,10 @@ function update(req, res) {
 
             }
 
+            JSON.parse(params.subCategoryIds).forEach(element => {
+                subCategoryIds.push({ subCategoryId: element })
+            })
+
             const record = ad.update({
                 title: params.title,
                 type: params.type,
@@ -174,8 +194,10 @@ function update(req, res) {
                 status: params.status,
                 shopId: params.shop_id,
                 categoryId: params.category_id,
-                subCategoryId: params.subCategoryId
-            }, { where: { id: req.params.id } });
+                subCategoryId: params.subCategoryIds
+            }, { where: { id: req.params.id } }, {
+                include: [adSubCategory]
+            });
 
             ad.findOne({
                 where: { id: req.params.id },
@@ -183,7 +205,11 @@ function update(req, res) {
                     model: shop
                 }, {
                     model: catagory
-                }, { model: subCategory }]
+                }, {
+                    model: adSubCategory,
+                    attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'adId'] },
+                    include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
+                }]
             }).then(record => {
                 return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
             }).catch(err => {
@@ -206,7 +232,11 @@ function getAll(req, res) {
     ad.findAll({
         include: [{
             model: shop
-        }, { model: catagory }, { model: subCategory }]
+        }, { model: catagory }, {
+            model: adSubCategory,
+            attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'adId'] },
+            include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
+        }]
     }).then((record) => {
         final_ads = []
         record.forEach(ad => {
@@ -232,7 +262,11 @@ function getAdsOnDashboard(req, res) {
     ad.findAll({
         include: [{
             model: shop
-        }, { model: catagory }, { model: subCategory }],
+        }, { model: catagory }, {
+            model: adSubCategory,
+            attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'adId'] },
+            include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
+        }],
         where: {
             status: 'ACTIVE',
             start_at: {
@@ -257,7 +291,14 @@ function getAdsOnDashboard(req, res) {
     });
 }
 
-function getAdsBySubCatagoryId(req, res) {
+async function getAdsBySubCatagoryId(req, res) {
+
+    let adIds = await adSubCategory.findAll({
+        where: {
+            subCategoryId: req.body.subCategoryId
+        },
+        attributes: ['adId']
+    })
 
     var today = new Date();
     today = today.setHours(today.getHours() + 5);
@@ -265,7 +306,9 @@ function getAdsBySubCatagoryId(req, res) {
 
     ad.findAll({
         where: {
-            subCategoryId: req.body.subCategoryId,
+            id: {
+                [Op.in]: adIds.map(element => element.adId)
+            },
             status: 'ACTIVE',
             start_at: {
                 [Op.lt]: new Date(today)
@@ -278,7 +321,11 @@ function getAdsBySubCatagoryId(req, res) {
             model: shop
         }, {
             model: catagory
-        }, { model: subCategory }]
+        }, {
+            model: adSubCategory,
+            attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'adId'] },
+            include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
+        }]
     }).then((ads) => {
         live_ads = []
 
@@ -303,7 +350,11 @@ function getAdsByShopId(req, res) {
             model: shop
         }, {
             model: catagory
-        }, { model: subCategory }]
+        }, {
+            model: adSubCategory,
+            attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'adId'] },
+            include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
+        }]
     }).then((record) => {
         final_ads = []
         record.forEach(ad => {

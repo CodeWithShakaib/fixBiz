@@ -3,6 +3,6 @@ const authCrtl = require('./auth.controller');
 const router = express.Router();
 
 router.post('/signIn', authCrtl.signIn);
-// router.post('/forgetPassword', authCrtl.forgetPassword);
+router.post('/changePassword', authCrtl.changePassword);
 
 module.exports = router

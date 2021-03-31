@@ -16,18 +16,24 @@ const _ = require('lodash');
 const { isDate } = require("lodash")
 const geolib = require('geolib');
 const subCategory = require("../models/subCategory.model");
+const shopSubCategory = require("../models/shopSubCategory.model");
 
 
 
 
 
 function create(req, res) {
-
+    let subCategoryIds = [];
     params = req.body
 
     if (params.fieldWorker_id == '0') {
         params.fieldWorker_id = null
     }
+
+
+    JSON.parse(params.subCategoryIds).forEach(element => {
+        subCategoryIds.push({ subCategoryId: element })
+    })
 
     shop.findAll({
         where: {
@@ -73,7 +79,9 @@ function create(req, res) {
                 password: params.password,
                 phone_number: params.phone_number,
                 cityId: params.city_id,
-                subCategoryId: params.subCategoryId
+                shopSubCategories: subCategoryIds
+            }, {
+                include: [shopSubCategory]
             });
             record.save().then((record) => {
                 shop.findOne({
@@ -82,7 +90,9 @@ function create(req, res) {
                     }, {
                         model: fieldWorker
                     }, {
-                        model: subCategory
+                        model: shopSubCategory,
+                        attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'shopId'] },
+                        include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
                     }],
 
                     where: {
@@ -95,7 +105,7 @@ function create(req, res) {
                 });
 
             }).catch((err) => {
-                return apiRes.apiError(res, err.message)
+                return apiRes.apiError(res, null, err)
 
             })
         }
@@ -187,7 +197,9 @@ function searchByWord(req, res) {
                     required: false,
 
                 }, {
-                    model: subCategory
+                    model: shopSubCategory,
+                    attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'shopId'] },
+                    include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
                 }]
             }).then((record1) => {
                 if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
@@ -236,7 +248,9 @@ function get(req, res) {
                 }, {
                     model: city
                 }, { model: ad }, {
-                    model: subCategory
+                    model: shopSubCategory,
+                    attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'shopId'] },
+                    include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
                 }]
             }).then(record => {
                 return apiRes.apiSuccess(res, [record], "success")
@@ -270,7 +284,11 @@ function del(req, res) {
 }
 
 function update(req, res) {
+    let subCategoryIds = []
     params = req.body
+    JSON.parse(params.subCategoryIds).forEach(element => {
+        subCategoryIds.push({ subCategoryId: element })
+    })
     shop.count({ where: { id: req.params.id } }).then(count => {
         if (count != 0) {
             if (req.files && req.files.image) {
@@ -297,16 +315,17 @@ function update(req, res) {
                 latitude: params.latitude,
                 opening_time: params.opening_time,
                 closing_time: params.closing_time,
-                userId: params.user_id,
                 categoryId: params.category_id,
                 fieldWorkerId: params.fieldWorker_id,
                 owner_name: params.owner_name,
                 email: params.email,
+                password: params.password,
                 phone_number: params.phone_number,
                 cityId: params.city_id,
-                subCategoryId: params.subCategoryId
-
-            }, { where: { id: req.params.id } });
+                shopSubCategories: subCategoryIds
+            }, { where: { id: req.params.id } }, {
+                include: [shopSubCategory]
+            });
 
             shop.findOne({
                 where: { id: req.params.id },
@@ -322,7 +341,9 @@ function update(req, res) {
                 }, {
                     model: city
                 }, { model: ad }, {
-                    model: subCategory
+                    model: shopSubCategory,
+                    attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'shopId'] },
+                    include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
                 }]
             }).then(record => {
                 return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
@@ -355,7 +376,9 @@ function getAll(req, res) {
         }, {
             model: ad
         }, {
-            model: subCategory
+            model: shopSubCategory,
+            attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'shopId'] },
+            include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
         }]
     }).then((shops) => {
         return apiRes.apiSuccess(res, shops, "success")
@@ -371,99 +394,18 @@ function getBySubCatagoryId(req, res) {
     var today = new Date();
     today = new Date(today.setHours(today.getHours() + 5));
 
-
-
-    shop.findAll({
-        where: { subCategoryId: req.body.subCategoryId, [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }] },
-        include: [{
-            model: catagory
-        }, {
-            model: fieldWorker
-        }, {
-            model: review,
-            include: [{ model: user }]
-        }, {
-            model: service
-        }, {
-            model: city
-        }, {
-            model: ad,
-            where: {
-                status: 'ACTIVE',
-                start_at: {
-                    [Op.lt]: new Date(today)
-                },
-                end_at: {
-                    [Op.gt]: new Date(today)
-                }
-            },
-            required: false,
-
-        }, {
-            model: subCategory
-        }]
-    }).then((record) => {
-        if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
-
-            return apiRes.apiSuccess(res, record, "success")
-        } else {
-            final_result = []
-
-            for (let i = 0; i < record.length; i++) {
-                ads = []
-                distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: record[i].latitude, longitude: record[i].longitude }) / 1000
-                if (distance < 20.0) {
-                    record[i].distance = distance;
-                    final_result.push(record[i]);
-                }
-
-            }
-
-
-            return apiRes.apiSuccess(res, final_result, "success")
-        }
-
-
-
-    }).catch(err => {
-        return apiRes.apiError(res, err.message)
-    });
-
-}
-
-function searchFilter(req, res) {
-    var today = new Date();
-    today = new Date(today.setHours(today.getHours() + 5));
-
-    if (!req.body.subCategoryId) req.body.subCategoryId = 0
-    if (!req.body.city_id) req.body.city_id = 0
-    if (!req.body.longitude) req.body.longitude = 0.0
-    if (!req.body.latitude) req.body.latitude = 0.0
-
-
-    service.findAll({
-        attributes: ['shopId'],
-        // exclude: ['shopId'],
+    shopSubCategory.findAll({
         where: {
-            name: {
-                [Op.like]: `%${req.body.service}%`
-            }
-        }
-
-    }).then((record) => {
-        ids = []
-        record.forEach(element => {
-            ids.push(element.shopId)
-        });
-
+            subCategoryId: req.body.subCategoryId
+        },
+        attributes: ['shopId']
+    }).then(record => {
         shop.findAll({
             where: {
-                [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }],
-                [Op.or]: [{ subCategoryId: req.body.subCategoryId }, {
-                    id: {
-                        [Op.in]: ids
-                    }
-                }]
+                id: {
+                    [Op.in]: record.map(element => element.shopId)
+                },
+                [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }]
             },
             include: [{
                 model: catagory
@@ -489,7 +431,114 @@ function searchFilter(req, res) {
                 },
                 required: false,
 
-            }, { model: subCategory }]
+            }, {
+                model: shopSubCategory,
+                attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'shopId'] },
+                include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
+            }]
+        }).then((record) => {
+            if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
+
+                return apiRes.apiSuccess(res, record, "success")
+            } else {
+                final_result = []
+
+                for (let i = 0; i < record.length; i++) {
+                    ads = []
+                    distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: record[i].latitude, longitude: record[i].longitude }) / 1000
+                    if (distance < 20.0) {
+                        record[i].distance = distance;
+                        final_result.push(record[i]);
+                    }
+
+                }
+                return apiRes.apiSuccess(res, final_result, "success")
+            }
+
+
+
+        }).catch(err => {
+            return apiRes.apiError(res, err)
+        });
+    }).catch(err => {
+        return apiRes.apiError(res, null, err)
+    });
+
+
+
+}
+
+async function searchFilter(req, res) {
+    var today = new Date();
+    today = new Date(today.setHours(today.getHours() + 5));
+
+    if (!req.body.subCategoryId) req.body.subCategoryId = 0
+    if (!req.body.city_id) req.body.city_id = 0
+    if (!req.body.longitude) req.body.longitude = 0.0
+    if (!req.body.latitude) req.body.latitude = 0.0
+
+    let shopIds = await shopSubCategory.findAll({
+        where: {
+            subCategoryId: req.body.subCategoryId
+        },
+        attributes: ['shopId']
+    })
+
+
+
+    service.findAll({
+        attributes: ['shopId'],
+        // exclude: ['shopId'],
+        where: {
+            name: {
+                [Op.like]: `%${req.body.service}%`
+            }
+        }
+
+    }).then((record) => {
+        ids = []
+        record.forEach(element => {
+            ids.push(element.shopId)
+        });
+
+
+        shop.findAll({
+            where: {
+                [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }],
+                id: {
+                    [Op.in]: ids.concat(shopIds.map(element => element.shopId))
+                }
+
+            },
+            include: [{
+                model: catagory
+            }, {
+                model: fieldWorker
+            }, {
+                model: review,
+                include: [{ model: user }]
+            }, {
+                model: service
+            }, {
+                model: city
+            }, {
+                model: ad,
+                where: {
+                    status: 'ACTIVE',
+                    start_at: {
+                        [Op.lt]: new Date(today)
+                    },
+                    end_at: {
+                        [Op.gt]: new Date(today)
+                    }
+                },
+                required: false,
+
+            }, {
+                model: shopSubCategory,
+                attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'shopId'] },
+                include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
+            }]
         }).then((record1) => {
 
             if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
@@ -520,7 +569,9 @@ function searchFilter(req, res) {
                         required: false,
 
                     }, {
-                        model: subCategory
+                        model: shopSubCategory,
+                        attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'shopId'] },
+                        include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
                     }],
                     [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }]
                 }).then((record) => {
@@ -566,7 +617,9 @@ function searchFilter(req, res) {
                         required: false,
 
                     }, {
-                        model: subCategory
+                        model: shopSubCategory,
+                        attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'shopId'] },
+                        include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
                     }],
                     [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }]
                 }).then((record) => {
@@ -649,7 +702,9 @@ function getByCityId(req, res) {
             required: false,
 
         }, {
-            model: subCategory
+            model: shopSubCategory,
+            attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'shopId'] },
+            include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
         }]
     }).then((record) => {
         // if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {

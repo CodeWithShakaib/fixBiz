@@ -1,6 +1,6 @@
 // const admin = require("../shared/models/admin.model")
 const apiRes = require("../config/api.response");
-const { Op } = require("sequelize")
+const { Op, where } = require("sequelize")
 
 const catagory = require("../shared/models/category.model")
 const shop = require("../shared/models/shop.model")
@@ -69,6 +69,39 @@ function signIn(req, res) {
 
 }
 
+function changePassword(req, res) {
+    let params = req.body;
+    if (params.type == 'USER') {
+        user.count({ where: { phone_number: params.phone_number } }).then((count) => {
+            if (count != 0) {
+                user.update({
+                    password: params.new_password
+                }, { where: { phone_number: params.phone_number } })
+                return apiRes.apiSuccess(res, "Password changes sucessfully")
+            }
+            return apiRes.apiError(res, "User not found")
+        }).catch(err => {
+            return apiRes.apiError(res, null, err)
+        });
+    } else if (params.type == 'SHOP') {
+        console.log(params.phone_number)
+        shop.count({ where: { phone_number: params.phone_number } }).then((count) => {
+
+            if (count != 0) {
+                shop.update({ password: params.new_password }, { where: { phone_number: params.phone_number } })
+                return apiRes.apiSuccess(res, "Password changes sucessfully")
+            }
+            return apiRes.apiError(res, "Shop not found")
+        }).catch(err => {
+            return apiRes.apiError(res, null, err)
+        });
+    } else {
+        return apiRes.apiError(res, "Invalid type, it must be USER or SHOP")
+    }
+
+}
+
 module.exports = {
-    signIn
+    signIn,
+    changePassword
 }

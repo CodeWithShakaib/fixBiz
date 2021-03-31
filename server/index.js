@@ -5,6 +5,8 @@ const shop = require("./shared/models/shop.model")
 const { Op } = require("sequelize")
 const ad = require("./shared/models/ad.model")
 const subCategory = require("./shared/models/subCategory.model")
+const shopSubCategory = require("./shared/models/shopSubCategory.model")
+const adSubCategory = require("./shared/models/adSubCategory.model")
 const http = require('http').createServer(app); // http server use for whole application
 
 

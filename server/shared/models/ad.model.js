@@ -23,7 +23,6 @@ let ad = sequelize.define('ad', {
     }
 });
 
-ad.belongsTo(subCategory)
 ad.belongsTo(category);
 
 
