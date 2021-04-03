@@ -13,7 +13,6 @@ const { response } = require("../../config/express")
 const user = require("../models/user.model")
 const city = require("../models/city.model")
 const _ = require('lodash');
-const { isDate } = require("lodash")
 const geolib = require('geolib');
 const subCategory = require("../models/subCategory.model");
 const shopSubCategory = require("../models/shopSubCategory.model");
@@ -100,7 +99,11 @@ function create(req, res) {
                     }
 
 
-                }).then((record) => { return apiRes.apiSuccess(res, [record], "Success", ) }).catch(err => {
+                }).then((record) => {
+                    record = JSON.parse(JSON.stringify(record))
+                    record.shopSubCategories = record.shopSubCategories.map(ele => ele.subCategory)
+                    return apiRes.apiSuccess(res, [record], "Success", )
+                }).catch(err => {
                     return apiRes.apiError(res, err.message)
                 });
 
@@ -203,12 +206,20 @@ function searchByWord(req, res) {
                 }]
             }).then((record1) => {
                 if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
-                    return apiRes.apiSuccess(res, record1, "success")
+                    let shops = []
+                    record1.forEach(element => {
+                        element = JSON.parse(JSON.stringify(element))
+                        element.shopSubCategories = element.shopSubCategories.map(ele => ele.subCategory)
+                        shops.push(element)
+                    })
+                    return apiRes.apiSuccess(res, shops, "success")
                 } else {
                     final_result = []
                     record1.forEach(element => {
                         distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
                         if (distance < 20.0) {
+                            element = JSON.parse(JSON.stringify(element))
+                            element.shopSubCategories = element.shopSubCategories.map(ele => ele.subCategory)
                             element.distance = distance;
                             final_result.push(element);
                         }
@@ -253,6 +264,8 @@ function get(req, res) {
                     include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
                 }]
             }).then(record => {
+                record = JSON.parse(JSON.stringify(record))
+                record.shopSubCategories = record.shopSubCategories.map(ele => ele.subCategory)
                 return apiRes.apiSuccess(res, [record], "success")
             }).catch(err => {
                 return apiRes.apiError(res, err.message)
@@ -284,10 +297,10 @@ function del(req, res) {
 }
 
 function update(req, res) {
-    let subCategoryIds = []
+    let subCategories = []
     params = req.body
     JSON.parse(params.subCategoryIds).forEach(element => {
-        subCategoryIds.push({ subCategoryId: element })
+        subCategories.push({ shopId: req.params.id, subCategoryId: element })
     })
     shop.count({ where: { id: req.params.id } }).then(count => {
         if (count != 0) {
@@ -321,11 +334,16 @@ function update(req, res) {
                 email: params.email,
                 password: params.password,
                 phone_number: params.phone_number,
-                cityId: params.city_id,
-                shopSubCategories: subCategoryIds
-            }, { where: { id: req.params.id } }, {
-                include: [shopSubCategory]
-            });
+                cityId: params.city_id
+            }, { where: { id: req.params.id } });
+
+            shopSubCategory.destroy({
+                where: {
+                    shopId: req.params.id
+                }
+            })
+
+            shopSubCategory.bulkCreate(subCategories)
 
             shop.findOne({
                 where: { id: req.params.id },
@@ -346,7 +364,9 @@ function update(req, res) {
                     include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
                 }]
             }).then(record => {
-                return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
+                record = JSON.parse(JSON.stringify(record))
+                record.shopSubCategories = record.shopSubCategories.map(ele => ele.subCategory)
+                return apiRes.apiSuccess(res, [record], "success")
             }).catch(err => {
                 return apiRes.apiError(res, err.message)
             });
@@ -381,7 +401,13 @@ function getAll(req, res) {
             include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
         }]
     }).then((shops) => {
-        return apiRes.apiSuccess(res, shops, "success")
+        let new_data = []
+        shops.forEach(record => {
+            record = JSON.parse(JSON.stringify(record))
+            record.shopSubCategories = record.shopSubCategories.map(ele => ele.subCategory)
+            new_data.push(record)
+        })
+        return apiRes.apiSuccess(res, new_data, "success")
     }).catch(err => {
         return apiRes.apiError(res, err.message)
     });
@@ -438,8 +464,14 @@ function getBySubCatagoryId(req, res) {
             }]
         }).then((record) => {
             if (req.body.longitude == 0.0 && req.body.latitude == 0.0) {
+                let shops = []
+                record.forEach(element => {
+                    element = JSON.parse(JSON.stringify(element))
+                    element.shopSubCategories = element.shopSubCategories.map(ele => ele.subCategory)
+                    shops.push(element)
+                })
 
-                return apiRes.apiSuccess(res, record, "success")
+                return apiRes.apiSuccess(res, shops, "success")
             } else {
                 final_result = []
 
@@ -447,6 +479,8 @@ function getBySubCatagoryId(req, res) {
                     ads = []
                     distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: record[i].latitude, longitude: record[i].longitude }) / 1000
                     if (distance < 20.0) {
+                        record[i] = JSON.parse(JSON.stringify(record[i]))
+                        record[i].shopSubCategories = record[i].shopSubCategories.map(ele => ele.subCategory)
                         record[i].distance = distance;
                         final_result.push(record[i]);
                     }
@@ -575,7 +609,13 @@ async function searchFilter(req, res) {
                     }],
                     [Op.or]: [{ verification_status: 'ACTIVE' }, { verification_status: 'TRIAL' }]
                 }).then((record) => {
-                    return apiRes.apiSuccess(res, utils.getUnique(record1.concat(record)), "success")
+                    let shops = []
+                    utils.getUnique(record1.concat(record)).forEach(record => {
+                        record = JSON.parse(JSON.stringify(record))
+                        record.shopSubCategories = record.shopSubCategories.map(ele => ele.subCategory)
+                        shops.push(record)
+                    })
+                    return apiRes.apiSuccess(res, shops, "success")
                 }).catch(err => {
                     return apiRes.apiError(res, err.message)
                 });
@@ -626,6 +666,8 @@ async function searchFilter(req, res) {
                     record.forEach(element => {
                         distance = geolib.getDistance({ latitude: req.body.latitude, longitude: req.body.longitude }, { latitude: element.latitude, longitude: element.longitude }) / 1000
                         element.distance = distance;
+                        element = JSON.parse(JSON.stringify(element))
+                        element.shopSubCategories = element.shopSubCategories.map(ele => ele.subCategory)
                         final_result.push(element);
                     })
                     return apiRes.apiSuccess(res, utils.getUnique(final_result), "success")
@@ -720,12 +762,14 @@ function getByCityId(req, res) {
         //         final_result.push(record[i]);
 
         //     }
+        let shops = []
+        record.forEach(element => {
+            element = JSON.parse(JSON.stringify(element))
+            element.shopSubCategories = element.shopSubCategories.map(ele => ele.subCategory)
+            shops.push(element)
+        })
 
-
-        return apiRes.apiSuccess(res, record, "success")
-            // }
-
-
+        return apiRes.apiSuccess(res, shops, "success")
 
     }).catch(err => {
         return apiRes.apiError(res, err.message)

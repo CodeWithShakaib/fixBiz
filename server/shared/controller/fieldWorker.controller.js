@@ -142,11 +142,27 @@ function getShopsByFieldWorkerId(req, res) {
     })
 }
 
+function pay(req, res) {
+    shop.update({ isFieldWorkerPaid: true }, {
+        where: {
+            id: {
+                [Op.in]: JSON.parse(req.body.shopIds)
+            },
+            fieldWorkerId: req.params.id
+        }
+    }).then(result => {
+        return apiRes.apiSuccess(res)
+    }).catch(err => { return apiRes.apiError(res, null, err) })
+
+
+}
+
 module.exports = {
     create,
     get,
     del,
     update,
     getAll,
-    getShopsByFieldWorkerId
+    getShopsByFieldWorkerId,
+    pay
 }
