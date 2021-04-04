@@ -11,6 +11,8 @@ const gallery = require("../shared/models/gallery.model")
 const fieldWorker = require("../shared/models/fieldWorker.model")
 const user = require("../shared/models/user.model")
 const city = require("../shared/models/city.model")
+const subCategory = require("../shared/models/subCategory.model");
+const shopSubCategory = require("../shared/models/shopSubCategory.model");
 
 function signIn(req, res) {
     params = req.body
@@ -22,7 +24,7 @@ function signIn(req, res) {
                     return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
                 })
             } else {
-                return apiRes.apiError(res, "Invalid email or password")
+                return apiRes.apiError(res, "Invalid phone number or password")
             }
         }).catch(err => {
             return apiRes.apiError(res, err.message)
@@ -30,6 +32,7 @@ function signIn(req, res) {
 
     } else if (params.type == 'SHOP') {
         shop.count({ where: { phone_number: params.phone_number, password: params.password } }).then(count => {
+            console.log(count)
             if (count != 0) {
                 shop.findOne({
                     where: { phone_number: params.phone_number, password: params.password },
@@ -46,12 +49,20 @@ function signIn(req, res) {
                         model: gallery
                     }, {
                         model: city
-                    }, { model: ad }]
+                    }, { model: ad }, {
+                        model: shopSubCategory,
+                        attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'shopId'] },
+                        include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
+                    }]
                 }).then(record => {
-                    return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
-                })
+                    record = JSON.parse(JSON.stringify(record))
+                    record.shopSubCategories = record.shopSubCategories.map(ele => ele.subCategory)
+                    return apiRes.apiSuccess(res, [record], "success")
+                }).catch(err => {
+                    return apiRes.apiError(res, err.message)
+                });
             } else {
-                return apiRes.apiError(res, "Invalid email or password")
+                return apiRes.apiError(res, "Invalid phone number or password")
             }
         }).catch(err => {
             return apiRes.apiError(res, err.message)
@@ -89,7 +100,7 @@ function changePassword(req, res) {
 
             if (count != 0) {
                 shop.update({ password: params.new_password }, { where: { phone_number: params.phone_number } })
-                return apiRes.apiSuccess(res, "Password changes sucessfully")
+                return apiRes.apiSuccess(res, null, "Password changes sucessfully")
             }
             return apiRes.apiError(res, "Shop not found")
         }).catch(err => {

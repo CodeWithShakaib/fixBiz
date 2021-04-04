@@ -314,6 +314,8 @@ function update(req, res) {
                             res, "Image does't uploaded sucessfully.", err)
                 });
 
+            } else {
+                img_url = params.img_url
             }
 
             const record = shop.update({

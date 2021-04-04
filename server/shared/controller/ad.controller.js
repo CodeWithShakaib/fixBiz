@@ -166,6 +166,8 @@ function update(req, res) {
                             res, "Image does't uploaded sucessfully.", err)
                 });
 
+            } else {
+                img_url = params.img_url;
             }
 
             if (req.files && req.files.video) {
@@ -178,6 +180,8 @@ function update(req, res) {
                             res, "Video does't uploaded sucessfully.", err)
                 });
 
+            } else {
+                video_url = params.video_url;
             }
 
             JSON.parse(params.subCategoryIds).forEach(element => {
@@ -357,6 +361,46 @@ async function getAdsBySubCatagoryId(req, res) {
     });
 }
 
+function getAdsByCategoryId(req, res) {
+    var today = new Date();
+    today = today.setHours(today.getHours() + 5);
+
+
+    ad.findAll({
+        where: {
+            categoryId: req.body.categoryId,
+            status: 'ACTIVE',
+            start_at: {
+                [Op.lt]: new Date(today)
+            },
+            end_at: {
+                [Op.gt]: new Date(today)
+            }
+        },
+        include: [{
+            model: shop
+        }, {
+            model: catagory
+        }, {
+            model: adSubCategory,
+            attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'adId'] },
+            include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
+        }]
+    }).then((ads) => {
+        live_ads = []
+
+        ads.forEach(ad => {
+            ad.isLive = true;
+            ad = JSON.parse(JSON.stringify(ad))
+            ad.adSubCategories = ad.adSubCategories.map(ele => ele.subCategory)
+            live_ads.push(ad);
+        });
+        return apiRes.apiSuccess(res, live_ads, "success")
+    }).catch(err => {
+        return apiRes.apiError(res, err.message)
+    });
+}
+
 function getAdsByShopId(req, res) {
 
     var today = new Date();
@@ -427,5 +471,6 @@ module.exports = {
     getAdsBySubCatagoryId,
     getAdsByShopId,
     getAdsOnDashboard,
-    adToggle
+    adToggle,
+    getAdsByCategoryId
 }
