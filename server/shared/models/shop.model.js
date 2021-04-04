@@ -9,7 +9,7 @@ const gallery = require('./gallery.model');
 const city = require('./city.model');
 const ad = require('./ad.model');
 const subCategory = require('./subCategory.model');
-
+const adCount = require('./adCount.model')
 
 let shop = sequelize.define('shop', {
     name: datatype.STRING,
