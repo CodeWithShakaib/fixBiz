@@ -76,7 +76,10 @@ function create(req, res) {
                 }
             ]
         }).then((record) => {
-            console.log(typeof record.end_at)
+
+            record = JSON.parse(JSON.stringify(record))
+            record.adSubCategories = record.adSubCategories.map(ele => ele.subCategory)
+
             return apiRes.apiSuccess(res, [record], "Success", )
         }).catch(err => {
             return apiRes.apiError(res, err.message)
@@ -113,6 +116,8 @@ function get(req, res) {
                     ad.isLive = false
                 }
                 final_ads.push(ad);
+                ad = JSON.parse(JSON.stringify(ad))
+                ad.adSubCategories = ad.adSubCategories.map(ele => ele.subCategory)
 
                 return apiRes.apiSuccess(res, [ad], "success")
             }).catch(err => {
@@ -148,7 +153,7 @@ function del(req, res) {
 
 function update(req, res) {
     params = req.body
-    let subCategoryIds = [];
+    let subCategories = [];
     ad.count({ where: { id: req.params.id } }).then(count => {
         if (count != 0) {
             if (req.files && req.files.image) {
@@ -176,7 +181,7 @@ function update(req, res) {
             }
 
             JSON.parse(params.subCategoryIds).forEach(element => {
-                subCategoryIds.push({ subCategoryId: element })
+                subCategories.push({ adId: req.params.id, subCategoryId: element })
             })
 
             const record = ad.update({
@@ -193,11 +198,16 @@ function update(req, res) {
                 transaction_method: params.transaction_method,
                 status: params.status,
                 shopId: params.shop_id,
-                categoryId: params.category_id,
-                subCategoryId: params.subCategoryIds
-            }, { where: { id: req.params.id } }, {
-                include: [adSubCategory]
-            });
+                categoryId: params.category_id
+            }, { where: { id: req.params.id } });
+
+            adSubCategory.destroy({
+                where: {
+                    adId: req.params.id
+                }
+            })
+
+            adSubCategory.bulkCreate(subCategories)
 
             ad.findOne({
                 where: { id: req.params.id },
@@ -211,7 +221,9 @@ function update(req, res) {
                     include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
                 }]
             }).then(record => {
-                return apiRes.apiSuccess(res, [record.get({ plain: true })], "success")
+                record = JSON.parse(JSON.stringify(record))
+                record.adSubCategories = record.adSubCategories.map(ele => ele.subCategory)
+                return apiRes.apiSuccess(res, [record], "success")
             }).catch(err => {
                 return apiRes.apiError(res, err.message)
             });
@@ -245,6 +257,8 @@ function getAll(req, res) {
             } else {
                 ad.isLive = false
             }
+            ad = JSON.parse(JSON.stringify(ad))
+            ad.adSubCategories = ad.adSubCategories.map(ele => ele.subCategory)
             final_ads.push(ad);
         })
         return apiRes.apiSuccess(res, final_ads, "success")
@@ -282,6 +296,8 @@ function getAdsOnDashboard(req, res) {
 
         ads.forEach(ad => {
             ad.isLive = true;
+            ad = JSON.parse(JSON.stringify(ad))
+            ad.adSubCategories = ad.adSubCategories.map(ele => ele.subCategory)
             live_ads.push(ad);
         });
 
@@ -331,9 +347,11 @@ async function getAdsBySubCatagoryId(req, res) {
 
         ads.forEach(ad => {
             ad.isLive = true;
+            ad = JSON.parse(JSON.stringify(ad))
+            ad.adSubCategories = ad.adSubCategories.map(ele => ele.subCategory)
             live_ads.push(ad);
         });
-        return apiRes.apiSuccess(res, ads, "success")
+        return apiRes.apiSuccess(res, live_ads, "success")
     }).catch(err => {
         return apiRes.apiError(res, err.message)
     });
@@ -363,6 +381,8 @@ function getAdsByShopId(req, res) {
             } else {
                 ad.isLive = false
             }
+            ad = JSON.parse(JSON.stringify(ad))
+            ad.adSubCategories = ad.adSubCategories.map(ele => ele.subCategory)
             final_ads.push(ad);
         })
         return apiRes.apiSuccess(res, final_ads, "success")
