@@ -11,8 +11,37 @@ const fieldWorker = require("../models/fieldWorker.model")
 const { response } = require("../../config/express")
 const shop = require("../models/shop.model");
 const subCategory = require("../models/subCategory.model");
-const adSubCategory = require("../models/adSubCategory.model")
+const adSubCategory = require("../models/adSubCategory.model");
+const adCount = require("../models/adCount.model");
 
+
+function view(req, res) {
+    let params = req.body;
+    adCount.count({
+        where: {
+            userId: params.userId,
+            adId: params.adId
+        }
+    }).then((count) => {
+            if (count != 0) {
+                return apiRes.apiError(res, "Already viewed")
+            } else {
+                adCount.create({
+                    userId: params.userId,
+                    adId: params.adId
+                })
+                ad.increment('views_count', { by: 1, where: { id: params.adId } }).then((record) => {
+                    return apiRes.apiSuccess(res, null, "View added")
+                }).catch(err => {
+                    return apiRes.apiError(res, err.message)
+                });
+            }
+        }
+
+    ).catch(err => {
+        return apiRes.apiError(res, err.message)
+    });
+}
 
 function create(req, res) {
     let subCategoryIds = [];
@@ -311,7 +340,7 @@ function getAdsOnDashboard(req, res) {
     });
 }
 
-async function getAdsBySubCatagoryId(req, res) {
+async function getAdsBySubCategoryId(req, res) {
 
     let adIds = await adSubCategory.findAll({
         where: {
@@ -468,9 +497,10 @@ module.exports = {
     del,
     update,
     getAll,
-    getAdsBySubCatagoryId,
+    getAdsBySubCategoryId,
     getAdsByShopId,
     getAdsOnDashboard,
     adToggle,
-    getAdsByCategoryId
+    getAdsByCategoryId,
+    view
 }
