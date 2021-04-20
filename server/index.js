@@ -22,9 +22,9 @@ var a = 0;
 
 
 cron.schedule("59 23 * * *", async function() {
-    // /**
-    //  * logic to expire shop trial and send notification.
-    //  */
+    /**
+     * logic to expire shop trial and send notification.
+     */
 
     let trial_shops = await shop.findAll({
         where: {
