@@ -11,13 +11,14 @@ const { response } = require("../../config/express")
 const shop = require("../models/shop.model")
 const user = require("../models/user.model")
 const { param } = require("../routes/ad.router")
+const fs = require('fs');
 
 function create(req, res) {
 
     params = req.body
     if (req.files && req.files.image) {
         var image = req.files.image
-        var img_url = "/service_img/" + "_" + Date.now() + "_" + image.name;
+        var img_url = "/service_img/" + "_" + Date.now() + "_" + image.name.replace(' ', '_');
 
         image.mv(process.cwd() + '/server/public/' + img_url, function(err) {
             if (err)
@@ -42,6 +43,8 @@ function create(req, res) {
             ]
         }).then((record) => { return apiRes.apiSuccess(res, [record], "Success", ) })
 
+    }).catch((err) => {
+        return apiRes.apiSuccess(res, err.message)
     })
 }
 
@@ -65,7 +68,13 @@ function get(req, res) {
 
 }
 
-function del(req, res) {
+async function del(req, res) {
+    let data = await service.findByPk(req.params.id);
+    if (data) {
+        if (data.img_url)
+            fs.unlinkSync(process.cwd() + '/server/public/' + data.img_url);
+        console.log("image deleted")
+    }
     service.destroy({
         where: {
             id: req.params.id

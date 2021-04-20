@@ -12,6 +12,7 @@ const fieldWorker = require("../models/fieldWorker.model")
 const feedback = require("../models/feedback.model")
 const city = require("../models/city.model")
 const { response } = require("../../config/express")
+const fs = require('fs')
 
 function create(req, res) {
 
@@ -73,7 +74,13 @@ function get(req, res) {
 
 }
 
-function del(req, res) {
+async function del(req, res) {
+    let data = await user.findByPk(req.params.id);
+    if (data) {
+        if (data.img_url)
+            fs.unlinkSync(process.cwd() + '/server/public/' + data.img_url);
+        console.log("image deleted")
+    }
     user.destroy({
         where: {
             id: req.params.id

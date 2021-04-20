@@ -9,6 +9,7 @@ const service = require("../models/service.model")
 const gallery = require("../models/gallery.model")
 const { response } = require("../../config/express")
 const subCategory = require("../models/subCategory.model")
+const fs = require('fs')
 
 function create(req, res) {
 
@@ -64,7 +65,13 @@ function get(req, res) {
 
 }
 
-function del(req, res) {
+async function del(req, res) {
+    let data = await category.findByPk(req.params.id);
+    if (data) {
+        if (data.icon)
+            fs.unlinkSync(process.cwd() + '/server/public/' + data.icon);
+        console.log("image deleted")
+    }
     category.destroy({
         where: {
             id: req.params.id

@@ -12,8 +12,10 @@ router.put('/getByCityId', shopCrtl.getByCityId)
 router.post('/searchFilter', shopCrtl.searchFilter)
 router.post('/searchByWord', shopCrtl.searchByWord)
 router.put('/:id/activateShop', shopCrtl.activateShop)
-
-
+router.put('/:id/updateFCM', shopCrtl.updateFCM)
+router.post('/notifyShops', shopCrtl.notifyShops);
+router.get('/:id/notifications', shopCrtl.notifications);
+router.get('/test', shopCrtl.test);
 
 
 module.exports = router

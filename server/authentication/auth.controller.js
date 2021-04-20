@@ -92,7 +92,7 @@ function changePassword(req, res) {
             }
             return apiRes.apiError(res, "User not found")
         }).catch(err => {
-            return apiRes.apiError(res, null, err)
+            return apiRes.apiError(res, err.message)
         });
     } else if (params.type == 'SHOP') {
         console.log(params.phone_number)
@@ -104,7 +104,7 @@ function changePassword(req, res) {
             }
             return apiRes.apiError(res, "Shop not found")
         }).catch(err => {
-            return apiRes.apiError(res, null, err)
+            return apiRes.apiError(res, err)
         });
     } else {
         return apiRes.apiError(res, "Invalid type, it must be USER or SHOP")

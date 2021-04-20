@@ -9,6 +9,7 @@ const service = require("../models/service.model")
 const gallery = require("../models/gallery.model")
 const fieldWorker = require("../models/fieldWorker.model")
 const { response } = require("../../config/express")
+const fs = require('fs')
 
 function create(req, res) {
 
@@ -73,19 +74,28 @@ function get(req, res) {
 
 }
 
-function del(req, res) {
-    fieldWorker.destroy({
-        where: {
-            id: req.params.id
+async function del(req, res) {
+    try {
+        let data = await fieldWorker.findByPk(req.params.id);
+        if (data) {
+            if (data.img_url)
+                fs.unlinkSync(process.cwd() + '/server/public/' + data.img_url);
         }
-    }).then((rowDeleted) => {
 
-        if (rowDeleted > 0) {
-            return apiRes.apiSuccess(res, null, "success");
-        } else {
-            return apiRes.apiError(res, "Field Worker ID is not pressent");
-        }
-    });
+        fieldWorker.destroy({
+            where: {
+                id: req.params.id
+            }
+        }).then((rowDeleted) => {
+
+            if (rowDeleted > 0) {
+                return apiRes.apiSuccess(res, null, "success");
+            } else {
+                return apiRes.apiError(res, "Field Worker ID is not pressent");
+            }
+        });
+    } catch { return apiRes.apiError(res, "Field Worker ID is not pressent"); }
+
 
 }
 
@@ -151,8 +161,8 @@ function pay(req, res) {
             fieldWorkerId: req.params.id
         }
     }).then(result => {
-        return apiRes.apiSuccess(res)
-    }).catch(err => { return apiRes.apiError(res, null, err) })
+        return apiRes.apiSuccess(res, null, `${result} shops are paid`)
+    }).catch(err => { return apiRes.apiError(res, err) })
 
 
 }

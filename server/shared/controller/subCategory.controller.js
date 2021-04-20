@@ -3,6 +3,7 @@ const sequelize = require("../../config/db.connection")
 const { Op } = require("sequelize")
 const category = require("../models/category.model")
 const subCategory = require("../models/subCategory.model")
+const fs = require('fs');
 
 function create(req, res) {
 
@@ -21,7 +22,7 @@ function create(req, res) {
 
             if (req.files && req.files.icon) {
                 var image = req.files.icon
-                var img_url = "/subCategory_icon/" + "_" + params.name + "_" + image.name;
+                var img_url = "/subCategory_icon/" + "_" + params.name.replace(' ', '_') + "_" + image.name.replace(' ', '_');
 
                 image.mv(process.cwd() + '/server/public/' + img_url, function(err) {
                     if (err)
@@ -41,8 +42,10 @@ function create(req, res) {
                 apiRes.apiSuccess(res, [record], "Success", )
             })
         }
-    }).catch(error => console.log(error))
+    }).catch((err) => { return apiRes.apiError(res, err.message) }
 
+
+    )
 }
 
 function get(req, res) {
@@ -59,7 +62,12 @@ function get(req, res) {
 
 }
 
-function del(req, res) {
+async function del(req, res) {
+    let data = await subCategory.findByPk(req.params.id);
+    if (data) {
+        if (data.icon)
+            fs.unlinkSync(process.cwd() + '/server/public/' + data.icon);
+    }
     subCategory.destroy({
         where: {
             id: req.params.id

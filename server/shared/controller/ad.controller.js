@@ -13,13 +13,13 @@ const shop = require("../models/shop.model");
 const subCategory = require("../models/subCategory.model");
 const adSubCategory = require("../models/adSubCategory.model");
 const adCount = require("../models/adCount.model");
-
+const fs = require('fs')
 
 function view(req, res) {
     let params = req.body;
     adCount.count({
         where: {
-            userId: params.userId,
+            mac_address: params.mac_address,
             adId: params.adId
         }
     }).then((count) => {
@@ -27,7 +27,7 @@ function view(req, res) {
                 return apiRes.apiError(res, "Already viewed")
             } else {
                 adCount.create({
-                    userId: params.userId,
+                    mac_address: params.mac_address,
                     adId: params.adId
                 })
                 ad.increment('views_count', { by: 1, where: { id: params.adId } }).then((record) => {
@@ -162,21 +162,34 @@ function get(req, res) {
 
 }
 
-function del(req, res) {
-    ad.destroy({
-        where: {
-            id: req.params.id
+async function del(req, res) {
+    try {
+        let data = await ad.findByPk(req.params.id);
+        if (data) {
+            if (data.img_url) fs.unlinkSync(process.cwd() + '/server/public/' + data.img_url);
+            if (data.video_url) fs.unlinkSync(process.cwd() + '/server/public/' + data.video_url);
         }
-    }).then((rowDeleted) => {
 
-        if (rowDeleted > 0) {
-            return apiRes.apiSuccess(res, null, "success");
-        } else {
-            return apiRes.apiError(res, "Ad ID is not pressent");
-        }
-    }).catch(err => {
-        return apiRes.apiError(res, err.message)
-    });
+        ad.destroy({
+            where: {
+                id: req.params.id
+            }
+        }).then((rowDeleted) => {
+
+            if (rowDeleted > 0) {
+
+                return apiRes.apiSuccess(res, null, "success");
+            } else {
+                return apiRes.apiError(res, "Ad ID is not pressent");
+            }
+        }).catch(err => {
+            return apiRes.apiError(res, err.message)
+        });
+    } catch {
+        return apiRes.apiError(res, "Ad ID is not pressent");
+    }
+
+
 
 }
 
@@ -304,7 +317,7 @@ function getAdsOnDashboard(req, res) {
 
     var today = new Date();
     today = new Date(today.setHours(today.getHours() + 5));
-
+    let mac_address = req.query.mac_address;
 
     ad.findAll({
         include: [{
@@ -324,15 +337,33 @@ function getAdsOnDashboard(req, res) {
             }
         }
 
-    }).then((ads) => {
+    }).then(async(ads) => {
         live_ads = []
+        let ad_ids = []
+
+        if (mac_address) {
+            ad_ids = (await adCount.findAll({ where: { mac_address }, attributes: ['adId'] })).map(ele => ele.adId)
+        }
+
+
+
+
 
         ads.forEach(ad => {
             ad.isLive = true;
             ad = JSON.parse(JSON.stringify(ad))
+            if (ad_ids.includes(ad.id)) {
+                ad.isShowed = true
+            } else {
+                ad.isShowed = false
+            }
             ad.adSubCategories = ad.adSubCategories.map(ele => ele.subCategory)
             live_ads.push(ad);
         });
+
+
+
+
 
         return apiRes.apiSuccess(res, live_ads, "success")
     }).catch(err => {
@@ -341,6 +372,7 @@ function getAdsOnDashboard(req, res) {
 }
 
 async function getAdsBySubCategoryId(req, res) {
+    let mac_address = req.query.mac_address;
 
     let adIds = await adSubCategory.findAll({
         where: {
@@ -375,12 +407,22 @@ async function getAdsBySubCategoryId(req, res) {
             attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'adId'] },
             include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
         }]
-    }).then((ads) => {
+    }).then(async(ads) => {
         live_ads = []
+        let ad_ids = []
+
+        if (mac_address) {
+            ad_ids = (await adCount.findAll({ where: { mac_address }, attributes: ['adId'] })).map(ele => ele.adId)
+        }
 
         ads.forEach(ad => {
             ad.isLive = true;
             ad = JSON.parse(JSON.stringify(ad))
+            if (ad_ids.includes(ad.id)) {
+                ad.isShowed = true
+            } else {
+                ad.isShowed = false
+            }
             ad.adSubCategories = ad.adSubCategories.map(ele => ele.subCategory)
             live_ads.push(ad);
         });
@@ -394,6 +436,7 @@ function getAdsByCategoryId(req, res) {
     var today = new Date();
     today = today.setHours(today.getHours() + 5);
 
+    let mac_address = req.query.mac_address;
 
     ad.findAll({
         where: {
@@ -415,12 +458,22 @@ function getAdsByCategoryId(req, res) {
             attributes: { exclude: ['id', 'createdAt', 'updatedAt', 'adId'] },
             include: [{ model: subCategory, attributes: { exclude: ['createdAt', 'updatedAt', 'categoryId'] } }],
         }]
-    }).then((ads) => {
+    }).then(async(ads) => {
         live_ads = []
+        let ad_ids = []
+
+        if (mac_address) {
+            ad_ids = (await adCount.findAll({ where: { mac_address }, attributes: ['adId'] })).map(ele => ele.adId)
+        }
 
         ads.forEach(ad => {
             ad.isLive = true;
             ad = JSON.parse(JSON.stringify(ad))
+            if (ad_ids.includes(ad.id)) {
+                ad.isShowed = true
+            } else {
+                ad.isShowed = false
+            }
             ad.adSubCategories = ad.adSubCategories.map(ele => ele.subCategory)
             live_ads.push(ad);
         });
@@ -470,7 +523,8 @@ function adToggle(req, res) {
         if (record.status == 'PENDING') {
             ad.update({
                 status: 'ACTIVE'
-            }, { where: { id: req.params.id } }).then((record) => {
+            }, { where: { id: req.params.id } }).then(async(record1) => {
+                fcmCrtl.send_notification("AD_ACTIVE", await shop.findOne({ where: { shopId: record.shopID } }), "Update about your ad", `Your ad ${ele.title} has been active.`);
                 return apiRes.apiSuccess(res, "ACTIVE")
             }).catch(err => {
                 return apiRes.apiError(res, err.message)
@@ -478,7 +532,10 @@ function adToggle(req, res) {
         } else {
             ad.update({
                 status: 'PENDING'
-            }, { where: { id: req.params.id } }).then((record) => {
+            }, { where: { id: req.params.id } }).then(async(record2) => {
+
+                fcmCrtl.send_notification("AD_ACTIVE", await shop.findOne({ where: { shopId: record.shopID } }), "Update about your ad", `Your ad ${ele.title} has been pending.`);
+
                 return apiRes.apiSuccess(res, "PENDING")
             }).catch(err => {
                 return apiRes.apiError(res, err.message)

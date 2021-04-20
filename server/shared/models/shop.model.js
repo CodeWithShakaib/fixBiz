@@ -28,7 +28,11 @@ let shop = sequelize.define('shop', {
     email: datatype.STRING,
     password: datatype.STRING,
     distance: datatype.FLOAT,
-    isFieldWorkerPaid: datatype.BOOLEAN
+    isFieldWorkerPaid: datatype.BOOLEAN,
+    fcm_token: datatype.STRING,
+    expire_date: {
+        type: 'TIMESTAMP'
+    },
 });
 
 shop.hasMany(review);
