@@ -753,8 +753,9 @@ function activateShop(req, res) {
                 verification_status: 'ACTIVE',
                 expire_date: new Date(moment().add(1, 'Y').format('YYYY-MM-DD')).toISOString().replace('T', ' ').replace('Z', ' ') + '+00:00',
 
-            }, { where: { id: req.params.id } }).then((record) => {
-                fcmCrtl.send_notification("SHOP_ACTIVE", record, "Update about your shop", "Your shop status has been active. Check profile for more information.");
+            }, { where: { id: req.params.id } }).then(async(record) => {
+
+                fcmCrtl.send_notification("SHOP_ACTIVE", await shop.findByPk(req.params.id), "Update about your shop", "Your shop status has been active. Check profile for more information.");
                 return apiRes.apiSuccess(res, null, "ACTIVE")
             }).catch(err => {
                 return apiRes.apiError(res, err.message)
@@ -762,8 +763,8 @@ function activateShop(req, res) {
         } else {
             shop.update({
                 verification_status: 'PENDING'
-            }, { where: { id: req.params.id } }).then((record) => {
-                fcmCrtl.send_notification("SHOP_PENDIND", record, "Update about your shop", "Your shop status has been pending. Check profile for more information.");
+            }, { where: { id: req.params.id } }).then(async(record) => {
+                fcmCrtl.send_notification("SHOP_PENDIND", await shop.findByPk(req.params.id), "Update about your shop", "Your shop status has been pending. Check profile for more information.");
                 return apiRes.apiSuccess(res, null, "PENDING", )
             }).catch(err => {
                 return apiRes.apiError(res, err.message)
@@ -780,7 +781,7 @@ function updateFCM(req, res) {
     let id = req.params.id;
     let fcm_token = req.body.fcm_token;
     shop.update({ fcm_token }, { where: { id } }).then((response) => {
-        return apiRes.apiSuccess(res, "Fcm token updated sucessfully")
+        return apiRes.apiSuccess(res, [], "Fcm token updated sucessfully")
     }).catch((err) => {
         return apiRes.apiError(res, err.message)
     })
