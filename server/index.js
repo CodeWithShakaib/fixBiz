@@ -12,8 +12,6 @@ const http = require('http').createServer(app); // http server use for whole app
 
 const fcmCrtl = require("../server/config/fcm.controller");
 
-
-
 app.get('/', function(req, res) {
     res.send("Welcome to fiz-biz");
 });
