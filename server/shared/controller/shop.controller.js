@@ -886,7 +886,15 @@ function notifications(req, res) {
     if (!limit) limit = 10
     if (!offset) offset = 0
 
-    notification.findAll({ where: { shopId: req.params.id }, attributes: { exclude: ['createdAt', 'updatedAt'] }, offset: offset * limit, limit }).then((result) => {
+    notification.findAll({
+        where: { shopId: req.params.id },
+        attributes: { exclude: ['updatedAt'] },
+        offset: offset * limit,
+        limit,
+        order: [
+            ['id', 'DESC']
+        ]
+    }).then((result) => {
         return apiRes.apiSuccess(res, result)
     }).catch((err) => {
         return apiRes.apiError(res, result)
