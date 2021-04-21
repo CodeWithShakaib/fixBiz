@@ -893,17 +893,9 @@ function notifications(req, res) {
 }
 
 async function test(req, res) {
-    s = await shop.findOne({
-        where: {
-            expire_date: {
-                [Op.lt]: new Date()
-            }
 
-        }
-    })
+    return apiRes.apiSuccess(res)
 
-    console.log(s)
-    return apiRes.apiSuccess(res, s);
 }
 
 module.exports = {
