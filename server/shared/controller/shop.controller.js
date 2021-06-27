@@ -110,7 +110,7 @@ function create(req, res) {
                 });
 
             }).catch((err) => {
-                console.err(err)
+                console.log(err)
                 return apiRes.apiError(res, err.message)
 
             })
@@ -363,8 +363,8 @@ function update(req, res) {
                     email: params.email,
                     password: params.password,
                     phone_number: params.phone_number,
-                    cityId: params.city_id
-                        // expire_date: params.expire_date
+                    cityId: params.city_id,
+                    expire_date: params.expire_date
                 };
             } else {
                 body = {
